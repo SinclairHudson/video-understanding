@@ -64,7 +64,7 @@ Details: In the text we expect an <image> special token to indicate where an ima
 """
 tokenizer.padding_side = "left" # For generation padding tokens should be on the left
 lang_x = tokenizer(
-    ["<image>An image of two cats.<|endofchunk|><image>An image of a bathroom sink.<|endofchunk|><image>An image of"],
+    ["<image>An image of two cats.<|endofchunk|><image>An image of a bathroom sink.<|endofchunk|><image> What is this an image of?"],
     return_tensors="pt",
 )
 
@@ -73,9 +73,9 @@ lang_x = tokenizer(
 Step 4: Generate text
 """
 generated_text = model.generate(
-    vision_x=vision_x,
+    vision_x=vision_x.to(device),
     lang_x=lang_x["input_ids"].to(device),
-    attention_mask=lang_x["attention_mask"],
+    attention_mask=lang_x["attention_mask"].to(device),
     max_new_tokens=20,
     num_beams=3,
 )
