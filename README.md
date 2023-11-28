@@ -1,6 +1,22 @@
 # video-understanding
 A project for CSC2508 advanced data systems; understanding video through textual representations
 
+---
+
+LLMs are multimodal and given images you can ask them to describe them in detail. This opens new
+directions. Traditionally the vision community has developed video summarization algorithms (image
+based) and video query answering techniques (image based as well). Can we perform the same tasks
+with LLMs?
+The idea is simple: get a large video, process it frame by frame via an LLM and get the textual
+description of each frame (ask the LLM to describe the objects, their type, their relationships etc). Now
+you have a large collection of documents (frame description and frame identifier). You can index them
+and answer queries. You can summarise the document and identify corresponding frames to stitch a
+video summary visually. Frame changes slowly so there is a lot of redundancy across frames which you
+should filter out.
+
+---
+
+
 ### Initial Proposal, Oct 20 2023-ish
 
 I would like to explore the last task: Video Query Processing with Text.
@@ -18,3 +34,9 @@ The applications I have in mind for such technology would be closed captioning, 
 I anticipate that one of the difficulties with the project will be finding a performant, free model to use for experimentation.
 That being said, OpenFlamingo seems like a promising candidate: https://github.com/mlfoundations/open_flamingo.
 I will also explore black-box APIs for multimodal LLMs, if they are inexpensive.
+
+---
+
+### TODO
+use and get comfortable with LangChain; it's got retriever models, and a bunch of other simple LLM wrappers.
+we gonna be running some locally!
