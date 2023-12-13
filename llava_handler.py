@@ -1,9 +1,9 @@
 from llava.model.builder import load_pretrained_model
 from llava.mm_utils import get_model_name_from_path
-from llava.eval.run_llava import image_parser, load_image, load_images
 from llava.utils import disable_torch_init
 import torch
 import re
+from PIL import Image
 
 from llava.constants import (
     IMAGE_TOKEN_INDEX,
@@ -21,18 +21,25 @@ from llava.mm_utils import (
     get_model_name_from_path,
     KeywordsStoppingCriteria,
 )
-
+# Model
+disable_torch_init()
 model_path = "liuhaotian/llava-v1.5-7b"
-
 tokenizer, model, image_processor, context_len = load_pretrained_model(
     model_path=model_path,
     model_base=None,
     model_name=get_model_name_from_path(model_path)
 )
 
-def eval_model(query, image_files, conv_mode=None, temperature=0):
-    # Model
-    disable_torch_init()
+def force_cudnn_initialization():
+    s = 32
+    dev = torch.device('cuda')
+    torch.nn.functional.conv2d(torch.zeros(s, s, s, s, device=dev), torch.zeros(s, s, s, s, device=dev))
+
+def call_llava(query, images, conv_mode=None, temperature=0, max_new_tokens=512, num_beams=1):
+    """
+    takes in a prompt (query) and image files, and returns a text response from the model
+    """
+    force_cudnn_initialization()
 
     qs = query
     image_token_se = DEFAULT_IM_START_TOKEN + DEFAULT_IMAGE_TOKEN + DEFAULT_IM_END_TOKEN
@@ -71,8 +78,8 @@ def eval_model(query, image_files, conv_mode=None, temperature=0):
     conv.append_message(conv.roles[1], None)
     prompt = conv.get_prompt()
 
-    image_files = image_files.split(",")
-    images = load_images(image_files)
+    # image_files = image_files.split(",")
+    # images = load_images(image_files)
     images_tensor = process_images(
         images,
         image_processor,
@@ -95,9 +102,9 @@ def eval_model(query, image_files, conv_mode=None, temperature=0):
             images=images_tensor,
             do_sample=True if temperature > 0 else False,
             temperature=temperature,
-            top_p=args.top_p,
-            num_beams=args.num_beams,
-            max_new_tokens=args.max_new_tokens,
+            top_p=None,
+            num_beams=num_beams,
+            max_new_tokens=max_new_tokens,
             use_cache=True,
             stopping_criteria=[stopping_criteria],
         )
@@ -115,4 +122,10 @@ def eval_model(query, image_files, conv_mode=None, temperature=0):
     if outputs.endswith(stop_str):
         outputs = outputs[: -len(stop_str)]
     outputs = outputs.strip()
+    return outputs
+
+if __name__ == "__main__":
+    query = "Describe this image."
+    image_files = Image.open("images/me.jpg")
+    outputs = call_llava(query, [image_files], temperature=0.3, num_beams=4)
     print(outputs)

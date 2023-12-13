@@ -5,9 +5,7 @@
 \usepackage[english]{babel}
 
 % Set page size and margins
-% Replace `letterpaper' with `a4paper' for UK/EU standard size
-\usepackage[letterpaper,top=2cm,bottom=2cm,left=3cm,right=3cm,marginparwidth=1.75cm]{geometry}
-
+% Replace `letterpaper' with `a4paper' for UK/EU standard size \usepackage[letterpaper,top=2cm,bottom=2cm,left=3cm,right=3cm,marginparwidth=1.75cm]{geometry}
 % Useful packages
 \usepackage{amsmath}
 \usepackage{graphicx}
@@ -34,14 +32,30 @@ We propose a video understanding pipeline using LLMs that can be used to...
 
 \subsection{Video Foundation Models}
 
-\subsection{Video Retrieval}
+\subsection{Related Work}
 
-XCLIP \cite{}
-CLIP4CLIP \cite{}
-MSR-VTT (Microsoft Research Video to Text) is the dataset of choice, for video retrieval \cite{}.
+
+CLIP4CLIP is a method that aims to extend the ideas of CLIP \cite{clip} to the video domain \cite{clip4clip}.
+It generally follows a bi-encoder structure, in which the video and text are encoded using separate transformers \cite{transformer}, and then both representations are fed into a similarity calculator module.
+The system is trained end-to-end with contrastive loss, as in CLIP \cite{clip}.
+
+XCLIP \cite{xclip}
+
+InternVideo is a recent attempt at a "foundation model" for video, being able to complete numerous downstream tasks.
+The authors train InternVideo with a combination of multimodal constrastive learning (as in CLIP \cite{clip}), as well as masked video reconstruction, inspired by videoMAE \cite{videomae}.
+
+MSR-VTT (Microsoft Research Video to Text) is a popular video understanding dataset \cite{msr-vtt}.
 This dataset can be used for multiple tasks, including Video Question Answering, Video Retrieval, and Video Captioning.
+It contains 10,000 videos, largely sourced from the internet (TODO verify).
+For the video retriveal task, 1000 queries are used for testing, each specifying exactly one video as the correct answer \cite{jsfusion}.
+
 
 \section{Pipeline}
+
+%TODO figure here
+%\caption{The high level pipeline to use LLMs to understand video.}
+
+
 
 \section{Clip Partitioning}
 
@@ -49,27 +63,46 @@ Videos can contain a lot of different clips, which may or may not be related.
 The input for clip partitioning is the whole video, and the output is a list of breaks (frame numbers) between clips.
 Uniform partitioning (every 10 seconds is a new clip)
 
-
 Selection based on L2
 
 Selection based on Optical Flow.
 The idea is to note places in the video in which there is a very large change (increase) in optical flow, indicating a scene change or at least a cut in the video.
 
+
 \section{Frame Selection}
 
 Even within a single clip, there are a lot of frames, most of which are very similar to their neighbours.
-To make the pipeline efficient.
-LLMs can only effectively interpret one image at a time.
+To make the pipeline efficient, it's critical to select the subset of the most semantically relevant frames.
+LLMs can only effectively interpret one image at a time (todo verify).
 The input to frame selection is a clip (small length of video) and the output is a list of frames selected for further processing.
+
+Earlier works simply sample randomly \cite{TODO} or sample uniformly, at a course framerate such as 1 frame per second \cite{clip4clip}.
+
+This work explores 3 different frame selection strategies:
+greedy L1 selection, stratified sampling, and TODO.
+
+\subsection{Greedy L1 Selection}
+Greedy L1 selection initially selects the first frame of a clip. Then, it selects an additional clip if the L1 distance between the new frame and the previously selected frame is greater than some threshold (for example).
+The L1 distance is normalized by the number of pixels in the image, so that the threshold is independent of the video resolution.
+In the MSR-VTT dataset, most videos are quite short (TODO graph for this), and often only contain a single shot.
+As such, when using Greedy L1 selection, a substantial number of videos only have the first frame selected (with L1 threshold 180).
+
+\subsection{Stratified Sampling}
+To get a potentially more diverse set of frames, the first, last and middle frames are selected.
+We call this sampling method \verb|3-strat|. We also explore \verb|5-strat|, which selects the first, last, and 3 evenly spaced frames in between.
 
 \section{Prompting Strategies}
 
-LLM performance can be sensitive to prompts.
+The LLM used in testing this pipeline is LLava \cite{llava}.
+LLaVA is selected because it is free and open source, and can be run on a single consumer GPU, making it amenable to experimentation.
 
 Beam search, multiple prompts with a temperature.
 
+For getting a textual description of a single image, the prompt used is "Please describe the objects in this image. Be as descriptive as possible.".
+LLM performance can be sensitive to prompts.
+
 The input to the LLM is a prompt and (potentially) multiple frames, and the output is a text caption.
-In all cases, we limit the length of the caption to 200 words, to bound the amount of computation required frame.
+In all cases, we limit the length of the caption to 512 words, to bound the amount of computation required per frame.
 
 \section{Retrieval}
 
@@ -77,7 +110,19 @@ The last aspect of
 
 Because LLMs have described the content of the videos, the retrieval task is reduced to that of text retrieval, which is well-studied.
 
-\section{Testing Paradigms}
+\section{Results}
+
+\begin{table}[]
+\begin{tabular}{|l|l|lll}
+\cline{1-2}
+                    & MSR-VTT V2T R@1 &  &  &  \\ \cline{1-2}
+CLIP4Clip           & 45.6            &  &  &  \\ \cline{1-2}
+XCLIP               & 49.3            &  &  &  \\ \cline{1-2}
+InternVideo         & 55.2            &  &  &  \\ \cline{1-2}
+3-strat-0-temp-BM25 & TODO            &  &  &  \\ \cline{1-2}
+\end{tabular}
+\caption{Results on MSR-VTT Text to Video retrieval task.}
+\end{table}
 
 \section{Future work}
 
