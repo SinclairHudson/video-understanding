@@ -37,7 +37,7 @@ def get_video_frames_triples(video_path, proportions=[0, 0.5, 1.0], delta=0.5) -
     fps = int(cap.get(cv2.CAP_PROP_FPS))
 
     def clamp_middle_frame(middle_frame):
-        return int(max(delta * fps, min(1 - (delta * fps), proportion)))
+        return int(max(delta * fps, min(total_frames - (delta * fps), middle_frame)))
 
     # Read the first frame
     triples = []
@@ -46,7 +46,7 @@ def get_video_frames_triples(video_path, proportions=[0, 0.5, 1.0], delta=0.5) -
         ideal_mid_frame = int((total_frames - 1) * proportion)
         mid_frame = clamp_middle_frame(ideal_mid_frame)
 
-        cap.set(cv2.CAP_PROP_POS_FRAMES, mid_frame - fps * delta)
+        cap.set(cv2.CAP_PROP_POS_FRAMES, int(max(0, mid_frame - fps * delta)))
         ret, f = cap.read()
         tri.append(Image.fromarray(cv2.cvtColor(f, cv2.COLOR_BGR2RGB)))
 
@@ -54,7 +54,7 @@ def get_video_frames_triples(video_path, proportions=[0, 0.5, 1.0], delta=0.5) -
         ret, f = cap.read()
         tri.append(Image.fromarray(cv2.cvtColor(f, cv2.COLOR_BGR2RGB)))
 
-        cap.set(cv2.CAP_PROP_POS_FRAMES, mid_frame + fps * delta)
+        cap.set(cv2.CAP_PROP_POS_FRAMES, int(min(mid_frame + fps * delta, total_frames - 1)))
         ret, f = cap.read()
         tri.append(Image.fromarray(cv2.cvtColor(f, cv2.COLOR_BGR2RGB)))
 
@@ -110,15 +110,35 @@ def get_length_histogram():
     plt.hist(lengths, bins=32, range=(0, 32))
     plt.xticks(fontsize=18)  # Set x-axis tick label font size
     plt.yticks(fontsize=18)  # Set y-axis tick label font size
+    plt.xlabel("Video Length (seconds)", fontsize=18)
+    plt.ylabel("count", fontsize=18)
     plt.show()
+
+def get_number_of_frames_per_clip_L1(threshs=[50, 100, 150, 200, 250]):
+    datasets_path = "/media/sinclair/datasets/MSRVTT/videos/all/"
+    subset_df = pd.read_csv("/media/sinclair/datasets/msrvtt_data/MSRVTT_JSFUSION_test.csv")
+    subset = subset_df["video_id"].tolist()
+    for i, file in enumerate(tqdm(subset)):
+        for thresh in threshs:
+            video_path = os.path.join(datasets_path, file)+".mp4"
+            frames = get_video_frames_based_on_L1(video_path, thresh)
+            subset_df.at[i, "frames_"+str(thresh)] = len(frames)
+    subset_df.to_csv("msrvtt_jsfusion_with_frames_per_clip.csv", index=False)
+
+    plt.figure(figsize=(10, 10))
+    for thresh in threshs:
+        plt.hist(subset_df["frames_"+str(thresh)], bins=32, range=(0, 32), label=str(thresh))
+
+    # TODO still needs some work
+    plt.show()
+
 
 
 # Example usage:
 if __name__ == '__main__':
-    get_length_histogram()
-    # datasets_path = "/media/sinclair/datasets/MSRVTT/videos/all/"
-    # subset_df = pd.read_csv("/media/sinclair/datasets/msrvtt_data/MSRVTT_JSFUSION_test.csv")
-    # subset = subset_df["video_id"].tolist()
-    # for i, file in enumerate(tqdm(subset)):
-        # frames = get_video_frames_based_on_L1(os.path.join(datasets_path, file)+".mp4")
+    # get_length_histogram()
+    # get_number_of_frames_per_clip_L1()
+    get_video_frames_triples("/media/sinclair/datasets/MSRVTT/videos/all/video15.mp4", [0, 0.5, 1], 0.5)
+    get_video_frames_triples("/media/sinclair/datasets/MSRVTT/videos/all/video16.mp4", [0, 0.5, 1], 0.5)
+    get_video_frames_triples("/media/sinclair/datasets/MSRVTT/videos/all/video17.mp4", [0, 0.5, 1], 0.5)
 

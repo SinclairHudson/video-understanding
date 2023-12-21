@@ -18,31 +18,26 @@
 \maketitle
 
 \begin{abstract}
-      This work explores different ways to leverage language models to convert video into textual descriptions, and then further answer queries about the video using the textual descriptions.
+      This work explores different ways to leverage large language models (LLMs) to convert video into textual descriptions, and then further answer queries about the video using the textual descriptions.
 \end{abstract}
 
 \section{Introduction}
 
-Your introduction goes here! Simply start writing your document and use the Recompile button to view the updated PDF preview. Examples of commonly used commands and features are listed below, to help you get started.
 We propose a video understanding pipeline using LLMs that can be used to...
+% TODO hmmm
+Simultaneously, the performance of language models has surged in recent years, largely thanks to the predictable scaling of transformer-based models.
+This work proposes a general pipeline for accomplishing video understanding tasks using multimodal LLMs, by converting visual information into text.
 
 \section{Related Work}
 
-\subsection{Next Word Prediction}
-
-\subsection{Video Foundation Models}
-
-\subsection{Related Work}
-
-
 CLIP4CLIP is a method that aims to extend the ideas of CLIP \cite{clip} to the video domain \cite{clip4clip}.
-It generally follows a bi-encoder structure, in which the video and text are encoded using separate transformers \cite{transformer}, and then both representations are fed into a similarity calculator module.
+It generally follows a bi-encoder structure, in which the video and text are encoded using separate transformers \cite{transformer}. Then, both representations are fed into a similarity calculator module.
 The system is trained end-to-end with contrastive loss, as in CLIP \cite{clip}.
 
 XCLIP \cite{xclip}
 
 InternVideo is a recent attempt at a "foundation model" for video, being able to complete numerous downstream tasks.
-The authors train InternVideo with a combination of multimodal constrastive learning (as in CLIP \cite{clip}), as well as masked video reconstruction, inspired by videoMAE \cite{videomae}.
+The authors train InternVideo with a combination of multimodal constrastive learning (as in CLIP \cite{clip}), as well as masked video reconstruction, inspired by VideoMAE \cite{videomae}.
 
 MSR-VTT (Microsoft Research Video to Text) is a popular video understanding dataset \cite{msr-vtt}.
 This dataset can be used for multiple tasks, including Video Question Answering, Video Retrieval, and Video Captioning.
@@ -62,6 +57,8 @@ For the video retriveal task, 1000 queries are used for testing, each specifying
 Videos can contain a lot of different clips, which may or may not be related.
 The input for clip partitioning is the whole video, and the output is a list of breaks (frame numbers) between clips.
 Uniform partitioning (every 10 seconds is a new clip)
+\subsection{Coarse-to-fine clip partitioning}
+Starts by computing the L1 distance between every 10 seconds of a 
 
 Selection based on L2
 
