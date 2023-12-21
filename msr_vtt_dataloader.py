@@ -4,6 +4,7 @@ import pandas as pd
 from typing import List
 from tqdm import tqdm
 from PIL import Image
+import matplotlib.pyplot as plt
 
 def get_video_frames(video_path, proportions=[0, 0.25, 0.5, 0.75, 1.0]):
     # Open the video file
@@ -24,12 +25,52 @@ def get_video_frames(video_path, proportions=[0, 0.25, 0.5, 0.75, 1.0]):
 
     return frames
 
-def get_video_frames_based_on_L1(video_path, new_frame_threshold = 180) -> List[Image.Image]:
+def get_video_frames_triples(video_path, proportions=[0, 0.5, 1.0], delta=0.5) -> List[List[Image.Image]]:
+    """
+    delta is the time difference between first, second and third frame in a triple. seconds
+    """
     # Open the video file
     cap = cv2.VideoCapture(video_path)
 
     # Get the total number of frames in the video
     total_frames = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
+    fps = int(cap.get(cv2.CAP_PROP_FPS))
+
+    def clamp_middle_frame(middle_frame):
+        return int(max(delta * fps, min(1 - (delta * fps), proportion)))
+
+    # Read the first frame
+    triples = []
+    for proportion in proportions:
+        tri = []
+        ideal_mid_frame = int((total_frames - 1) * proportion)
+        mid_frame = clamp_middle_frame(ideal_mid_frame)
+
+        cap.set(cv2.CAP_PROP_POS_FRAMES, mid_frame - fps * delta)
+        ret, f = cap.read()
+        tri.append(Image.fromarray(cv2.cvtColor(f, cv2.COLOR_BGR2RGB)))
+
+        cap.set(cv2.CAP_PROP_POS_FRAMES, mid_frame)
+        ret, f = cap.read()
+        tri.append(Image.fromarray(cv2.cvtColor(f, cv2.COLOR_BGR2RGB)))
+
+        cap.set(cv2.CAP_PROP_POS_FRAMES, mid_frame + fps * delta)
+        ret, f = cap.read()
+        tri.append(Image.fromarray(cv2.cvtColor(f, cv2.COLOR_BGR2RGB)))
+
+        triples.append(tri)
+
+    # Release the video capture object
+    cap.release()
+
+    return triples
+
+def get_video_frames_based_on_L1(video_path, new_frame_threshold = 180) -> List[Image.Image]:
+    # Open the video file
+    cap = cv2.VideoCapture(video_path)
+
+    # Get the total number of frames in the video
+    # total_frames = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
     width = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH))
     height = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
 
@@ -46,19 +87,38 @@ def get_video_frames_based_on_L1(video_path, new_frame_threshold = 180) -> List[
 
     # Release the video capture object
     cap.release()
-    print(len(to_keep_frames)/total_frames)
-    print(len(to_keep_frames))
-    print(total_frames)
-    print("------------------")
 
     return [Image.fromarray(cv2.cvtColor(f, cv2.COLOR_BGR2RGB)) for f in to_keep_frames]
+
+def get_length_seconds(video_path) -> float:
+    cap = cv2.VideoCapture(video_path)
+    fps = cap.get(cv2.CAP_PROP_FPS)
+    total_frames = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
+    cap.release()
+    return total_frames / fps
+
+def get_length_histogram():
+    datasets_path = "/media/sinclair/datasets/MSRVTT/videos/all/"
+    subset_df = pd.read_csv("/media/sinclair/datasets/msrvtt_data/MSRVTT_JSFUSION_test.csv")
+    lengths = []
+    subset = subset_df["video_id"].tolist()
+    for file in tqdm(subset):
+        video_path = os.path.join(datasets_path, file)+".mp4"
+        lengths.append(get_length_seconds(video_path))
+    subset_df["length"] = lengths
+    subset_df.to_csv("msrvtt_jsfusion_with_lengths.csv", index=False)
+    plt.hist(lengths, bins=32, range=(0, 32))
+    plt.xticks(fontsize=18)  # Set x-axis tick label font size
+    plt.yticks(fontsize=18)  # Set y-axis tick label font size
+    plt.show()
 
 
 # Example usage:
 if __name__ == '__main__':
-    datasets_path = "/media/sinclair/datasets/MSRVTT/videos/all/"
-    subset_df = pd.read_csv("/media/sinclair/datasets/msrvtt_data/MSRVTT_JSFUSION_test.csv")
-    subset = subset_df["video_id"].tolist()
-    for i, file in enumerate(tqdm(subset)):
-        frames = get_video_frames_based_on_L1(os.path.join(datasets_path, file)+".mp4")
+    get_length_histogram()
+    # datasets_path = "/media/sinclair/datasets/MSRVTT/videos/all/"
+    # subset_df = pd.read_csv("/media/sinclair/datasets/msrvtt_data/MSRVTT_JSFUSION_test.csv")
+    # subset = subset_df["video_id"].tolist()
+    # for i, file in enumerate(tqdm(subset)):
+        # frames = get_video_frames_based_on_L1(os.path.join(datasets_path, file)+".mp4")
 
