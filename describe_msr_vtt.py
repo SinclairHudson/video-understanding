@@ -70,6 +70,26 @@ def experiment_3strat_02temp():
 
     df.to_csv(output_file, index=False)
 
+def experiment_5strat_02temp():
+    output_file = "descriptions/msr-vtt_descriptions_5strat_02temp.csv"
+    prompt = "Please describe the objects in this image. Be as descriptive as possible. "
+    proportions = [0, 0.25, 0.5, 0.75, 1]
+    df = pd.DataFrame(columns=["video_id", "description"])
+    for i, file in enumerate(tqdm(subset)):
+        frames = get_video_frames(os.path.join(datasets_path, file)+".mp4", proportions)
+        descriptions = []
+        for frame in frames:
+            for _ in range(2):
+                # go 2 times per image
+                description = call_llava(prompt, [frame], temperature=0.2, max_new_tokens=512//2)
+                descriptions.append(description)
+
+        df.loc[len(df)] = [file, " ".join(descriptions)]
+        if i % 100 == 0:
+            df.to_csv(output_file, index=False)
+
+    df.to_csv(output_file, index=False)
+
 def experiment_L1_180():
     output_file = "msr-vtt_descriptions_L1180.csv"
     prompt = "Please describe the objects in this image. Be as descriptive as possible. "
@@ -112,8 +132,25 @@ def experiment_3strat_triples():
 
     df.to_csv(output_file, index=False)
 
+def experiment_5strat_triples():
+    output_file = "descriptions/msr-vtt_descriptions_5strat_triples.csv"
+    prompt = "These are 3 frames from the same video. Please describe the objects in this video clip."
+    proportions = [0, 0.25, 0.5, 0.75, 1]
+    df = pd.DataFrame(columns=["video_id", "triple_1_desc", "triple_2_desc", "triple_3_desc", "triple_4_desc", "triple_5_desc"])
+    for i, file in enumerate(tqdm(subset)):
+        triples = get_video_frames_triples(os.path.join(datasets_path, file)+".mp4", proportions)
+        descriptions = []
+        for triple in triples:
+            description = call_llava(prompt, triple)
+            descriptions.append(description)
+        descriptions.insert(0, file)
+        df.loc[len(df)] = descriptions
+        if i % 100 == 0:
+            df.to_csv(output_file, index=False)
+
+    df.to_csv(output_file, index=False)
+
 
 if __name__ == "__main__":
-    experiment_3strat_triples()
-    experiment_3strat_0temp()
-    experiment_5strat_0temp()
+    experiment_5strat_triples()
+    experiment_5strat_02temp()

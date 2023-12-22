@@ -126,7 +126,7 @@ def get_number_of_frames_per_clip_L1(threshs=[50, 100, 150, 200, 250]):
             subset_df.at[i, "frames_"+str(thresh)] = len(frames)
     subset_df.to_csv("msrvtt_jsfusion_with_frames_per_clip.csv", index=False)
 
-def show_frames_per_clip_L1():
+# def show_frames_per_clip_L1():
 
 
 
