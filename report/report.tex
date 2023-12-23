@@ -21,6 +21,8 @@
 
 \begin{abstract}
       This work explores different ways to leverage large language models (LLMs) to convert video into textual descriptions, and then further answer queries about the video using the textual descriptions.
+      VideoDescriptor?
+      VidDesc?
 \end{abstract}
 
 \section{Introduction}
@@ -28,11 +30,18 @@
 We propose a video understanding pipeline using LLMs that can be used to...
 % TODO hmmm
 Simultaneously, the performance of language models has surged in recent years, largely thanks to the predictable scaling of transformer-based models.
-This work proposes a general pipeline for accomplishing video understanding tasks using multimodal LLMs, by converting visual information into text.
+This work proposes a general pipeline for accomplishing video understanding tasks using multimodal LLMs, by converting visual information into text and then completing the analog task in the text domain.
 
 \section{Related Work}
 
 \subsection{Video Understanding}
+
+Video understanding is difficult for many reasons.
+The data is very high-dimensional, and yet semantically sparse; most frames and pixels are redundant when analysing the video for content.
+% TODO mention video compression here, and how it's really successful because of structural biases in video.
+Additionally, video-data is extremely time-consuming to annotate.
+As such, very few video datasets exist, and are often much smaller than analogous image datasets \cite{imagenet} \cite{COCO}.
+Nevertheless, videos are ubiquitous in digital life, and so the research domain of video understanding is active and diverse.
 
 CLIP4Clip is a method that aims to extend the ideas of CLIP \cite{clip} to the video domain \cite{clip4clip}.
 It generally follows a bi-encoder structure, in which the video and text are encoded using separate transformers \cite{transformer}.
@@ -51,6 +60,7 @@ InternVideo is a recent attempt at a "foundation model" for video, being able to
 The authors train InternVideo with a combination of multimodal constrastive learning (as in CLIP \cite{clip}), as well as masked video reconstruction, inspired by VideoMAE \cite{videomae}.
 The InternVideo video encoder is pretrained on a large dataset of internet videos and movies, allowing it to learn very semantically rich representations of videos.
 With additional fine-tuning on specific tasks, InternVideo achieves state-of-the-art performance on multiple tasks including Action Understanding, Video-Language Alignment, and Video Open Understanding \cite{internvideo}.
+Pipelines that use Internvideo are often combined with TODO in order to bridge the modality gap between video and text. Note that InternVideo is \textit{not} a large language model.
 
 \subsection{Large Language Models for Vision}
 
@@ -62,6 +72,10 @@ LLaVA \cite{llava} is a large language model trained on a combination of text an
 It is build upon the Vicuana language model \cite{vicuana}, and incorporates the visual encoder of CLIP \cite{clip} to encode images into embeddings that the language model can take as input.
 It is fine-tuned end-to-end on instructional image-text data.
 It has proven to be exceptionally strong at visual question-answering tasks, ... TODO
+
+\subsection{Large Language Models for Video}
+
+Most related to this work are attempts to leverage large language models for video understanding tasks.
 
 VideoChat \cite{videochat} focuses on an understanding of video that is amenable to multiple-round video question answering.
 The proposed approach is similar to that taken in VideoChat-Text; the pipeline first seeks to convert the video into a textual description, and then uses that textual description for downstream tasks involving the video.
@@ -75,11 +89,11 @@ This video embedding module is trained, while the down-stream LLM and video enco
 
 
 \subsection{Video-Text datasets}
-MSR-VTT (Microsoft Research Video to Text) is a popular video understanding dataset \cite{msr-vtt}.
+MSR-VTT (Microsoft Research Video to Text) is a flagship video understanding dataset \cite{msr-vtt}.
 This dataset can be used for multiple tasks, including Video Question Answering, Video Retrieval, and Video Captioning.
 The dataset contains 10,000 videos, largely sourced from the internet (TODO verify).
 For the video retrieval task, 1000 queries are used for testing, each specifying exactly one video as the correct answer \cite{jsfusion}.
-The videos in the video retrieval task are 12 seconds long on average, see \ref{fig:length_histogram} for a histogram of video lengths.
+The videos in the video retrieval split are 12 seconds long on average, see \ref{fig:length_histogram} for a histogram of video lengths.
 
 \begin{figure}
       \centering
@@ -97,6 +111,7 @@ The videos in the video retrieval task are 12 seconds long on average, see \ref{
       \label{fig:pipeline}
 \end{figure}
 
+The proposed pipeline is designed in such a way to be general to different video understanding tasks, with each of the 4 major steps allowing for multiple methods, or being optional for some tasks.
 For the purposes of this work, a "clip" is a small segment of a video that is a few seconds long, 
 and is highly cohesive in what it depicts. For example, in a movie, a clip might be a single shot.
 At a high level, the pipeline for video understanding using LLMs is as follows:
@@ -224,7 +239,7 @@ The KNN is performed using the FAISS library \cite{faiss}, and all clip descript
     \toprule
     \textbf{Benchmark} & \multicolumn{3}{c}{\textbf{MSR-VTT}} \\
     \cmidrule(lr){2-4}
-    & \textbf{R@1} & \textbf{B} & \textbf{C} \\
+                       prompt & \textbf{R@1} & \textbf{R@5} & \textbf{FT} & \textbf{Size} \\
     \midrule
     \multirow{2}{*}{CLIP4Clip} & 0.85 & 0.88 & 0.90 \\
     & (0.02) & (0.01) & (0.03) \\
@@ -235,14 +250,16 @@ The KNN is performed using the FAISS library \cite{faiss}, and all clip descript
     \multirow{2}{*}{InternVideo} & 0.92 & 0.89 & 0.91 \\
     & (0.01) & (0.02) & (0.01) \\
     \bottomrule
+    % TODO add my own results.
   \end{tabular}
   \label{tab:model_comparison}
-  \caption{Performance Comparison of Models on Different Benchmarks}
+  \caption{Performance Comparison of Models on Different Benchmarks. B}
 \end{table}
 
 Note that due to computational constraints, only the 1000 videos in the MSR-VTT retrieval split were indexed, while in related works the entire dataset of 10,000 videos are indexed.
 As such, direct comparisons between the recall values between this work and related works should not be made.
 The retrieval task for the proposed pipeline is much easier, since it is retrieving from a dataset one tenth the size.
+Also note that this pipeline functions zero-shot, while all other models have been finetuned for text-to-video retrieval on MSR-VTT.
 
 \subsection{Qualitative Results on Video Summarization}
 For video summarization, the task is to select a subset of clips from a video relevant to the query.
@@ -274,8 +291,9 @@ In this full soccer game, 7 goals are scored, 4 by France and 3 by Argentina.
 
 \section{Discussion}
 
-Interestingly, the experiments that use "triple" frames don't perform notably better than the experiments that use single frames.
-This is similar to the findings in CLIP4clip, where the authors find that projecting 3D doesn't improve performance over 2D...
+Interestingly, the experiments that use "triple" frames don't perform notably better than the experiments that use single frames in video retrieval.
+This seems to suggest that either the additional frames are redundant, or that LLaVA is not good at incorporating information from multiple images in a single generation step.
+This is similar to the findings in CLIP4clip, where the authors find that processing frames in batches as 3D tensors doesn't improve performance over frame-by-frame processing \cite{clip4clip}.
 
 The authors of VideoChat note that their similar VideoChat-Text pipeline struggled to understand "intricate temporal reasoning and causal inference".
 
@@ -285,9 +303,11 @@ Expanding methodologies to other datasets is critical to fully examine the gener
 Additionally, this pipeline currently is very slow, requiring many forward passes of a large language model for every frame, and multiple frames for every clip.
 Future work could investigate further minimizing the number of frames processed, and prompting techniques to generate very dense captions, with a lot of information content in few tokens.
 Finally, while this work focused on the visual features of video, audio is also often attached to video, and thus could be used to further improve the performance of the pipeline.
-Related work such as TODO has shown that audio can provide a small boost to performance \cite{TODO}.
-The current pipeline is experimental in nature, and has not been optimized for runtime performance. With additional engineering... TODO
-Future work could also investigate the influence of prompts and different LLMs on the performance of the pipeline.
+Related work such as VideoLLaMA has shown that audio can provide a small boost to performance \cite{videollama}.
+Incoporating audio would be particularly important for understanding videos that have an emphasis on dialogue, such as movies.
+The current pipeline is experimental in nature, and has not been optimized for runtime performance.
+With additional engineering effort, the performance of the video processing and text processing elements of the pipeline could both be greatly improved.
+Future work could also further investigate the influence of prompts and different LLMs on the performance of the pipeline.
 
 \section{Conclusion}
 
