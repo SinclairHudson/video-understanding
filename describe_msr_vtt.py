@@ -1,6 +1,7 @@
 # this file will create a csv that contains textual descriptions for all videos in the MSR-VTT dataset
 import os
 from tqdm import tqdm
+import numpy as np
 
 import pandas as pd
 from llava_handler import call_llava
@@ -11,6 +12,44 @@ datasets_path = "/media/sinclair/datasets/MSRVTT/videos/all/"
 
 subset_df = pd.read_csv("/media/sinclair/datasets/msrvtt_data/MSRVTT_JSFUSION_test.csv")
 subset = subset_df["video_id"].tolist()
+
+def experiment_3rand_0temp():
+    output_file = "descriptions/msr-vtt_descriptions_3rand_0temp.csv"
+    prompt = "Please describe the objects in this image. Be as descriptive as possible. "
+    # prompt = "Please describe the objects in this image."
+    proportions = np.random.uniform(0, 1, 3)
+    df = pd.DataFrame(columns=["video_id", "description"])
+    for i, file in enumerate(tqdm(subset)):
+        frames = get_video_frames(os.path.join(datasets_path, file)+".mp4", proportions)
+        descriptions = []
+        for frame in frames:
+            description = call_llava(prompt, [frame])
+            descriptions.append(description)
+
+        df.loc[len(df)] = [file, " ".join(descriptions)]
+        if i % 100 == 0:
+            df.to_csv(output_file, index=False)
+
+    df.to_csv(output_file, index=False)
+
+def experiment_5rand_0temp():
+    output_file = "descriptions/msr-vtt_descriptions_5rand_0temp.csv"
+    prompt = "Please describe the objects in this image. Be as descriptive as possible. "
+    # prompt = "Please describe the objects in this image."
+    proportions = np.random.uniform(0, 1, 5)
+    df = pd.DataFrame(columns=["video_id", "description"])
+    for i, file in enumerate(tqdm(subset)):
+        frames = get_video_frames(os.path.join(datasets_path, file)+".mp4", proportions)
+        descriptions = []
+        for frame in frames:
+            description = call_llava(prompt, [frame])
+            descriptions.append(description)
+
+        df.loc[len(df)] = [file, " ".join(descriptions)]
+        if i % 100 == 0:
+            df.to_csv(output_file, index=False)
+
+    df.to_csv(output_file, index=False)
 
 def experiment_3strat_0temp():
     output_file = "descriptions/msr-vtt_descriptions_3strat_0temp_concise.csv"
@@ -152,5 +191,5 @@ def experiment_5strat_triples():
 
 
 if __name__ == "__main__":
-    experiment_5strat_triples()
-    experiment_5strat_02temp()
+    experiment_3rand_0temp()
+    experiment_5rand_0temp()

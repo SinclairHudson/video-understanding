@@ -31,17 +31,19 @@ We propose a video understanding pipeline using LLMs that can be used to...
 % TODO hmmm
 Simultaneously, the performance of language models has surged in recent years, largely thanks to the predictable scaling of transformer-based models.
 This work proposes a general pipeline for accomplishing video understanding tasks using multimodal LLMs, by converting visual information into text and then completing the analog task in the text domain.
+A major focus of this work is to explore different methods for selecting frames in video clips, to achieve the best textual descriptions of the video.
 
 \section{Related Work}
 
 \subsection{Video Understanding}
 
-Video understanding is difficult for many reasons.
+Video understanding is a difficult machine learning task, for many reasons.
 The data is very high-dimensional, and yet semantically sparse; most frames and pixels are redundant when analysing the video for content.
 % TODO mention video compression here, and how it's really successful because of structural biases in video.
-Additionally, video-data is extremely time-consuming to annotate.
+Additionally, video data is extremely time-consuming to annotate.
 As such, very few video datasets exist, and are often much smaller than analogous image datasets \cite{imagenet} \cite{COCO}.
 Nevertheless, videos are ubiquitous in digital life, and so the research domain of video understanding is active and diverse.
+Below, a few of the most relevant works are briefly introduced.
 
 CLIP4Clip is a method that aims to extend the ideas of CLIP \cite{clip} to the video domain \cite{clip4clip}.
 It generally follows a bi-encoder structure, in which the video and text are encoded using separate transformers \cite{transformer}.
@@ -59,6 +61,7 @@ These representations, along with task-specific fine-tuning, allow X-CLIP to per
 InternVideo is a recent attempt at a "foundation model" for video, being able to complete numerous downstream tasks.
 The authors train InternVideo with a combination of multimodal constrastive learning (as in CLIP \cite{clip}), as well as masked video reconstruction, inspired by VideoMAE \cite{videomae}.
 The InternVideo video encoder is pretrained on a large dataset of internet videos and movies, allowing it to learn very semantically rich representations of videos.
+This dataset is compiled by the authors using both pre-existing video datasets as well as videos scraped from the internet. In total, the datasets contains 12 million videos from 5 different domains \cite{internvideo}.
 With additional fine-tuning on specific tasks, InternVideo achieves state-of-the-art performance on multiple tasks including Action Understanding, Video-Language Alignment, and Video Open Understanding \cite{internvideo}.
 Pipelines that use Internvideo are often combined with TODO in order to bridge the modality gap between video and text. Note that InternVideo is \textit{not} a large language model.
 
@@ -235,25 +238,32 @@ The KNN is performed using the FAISS library \cite{faiss}, and all clip descript
 
 \begin{table}[htbp]
   \centering
-  \begin{tabular}{lcccc}
+  \begin{tabular}{lccccccc}
     \toprule
-    \textbf{Benchmark} & \multicolumn{3}{c}{\textbf{MSR-VTT}} \\
-    \cmidrule(lr){2-4}
-                       prompt & \textbf{R@1} & \textbf{R@5} & \textbf{FT} & \textbf{Size} \\
+    \textbf{Approach} &FS & Prompt & Triple & \multicolumn{3}{c}{\textbf{MSR-VTT} T2V} \\
+    \cmidrule(lr){5-7}
+                      &&&& \textbf{R@1} & \textbf{R@5} & \textbf{R@10} \\
     \midrule
-    \multirow{2}{*}{CLIP4Clip} & 0.85 & 0.88 & 0.90 \\
-    & (0.02) & (0.01) & (0.03) \\
+    CLIP4Clip &-&-&-& 0.85 & 0.88 & 0.90 \\
     \midrule
-    \multirow{2}{*}{XCLIP} & 0.78 & 0.82 & 0.85 \\
-    & (0.03) & (0.02) & (0.01) \\
+    InternVideo &-&-&-& 0.85 & 0.88 & 0.90 \\
     \midrule
-    \multirow{2}{*}{InternVideo} & 0.92 & 0.89 & 0.91 \\
-    & (0.01) & (0.02) & (0.01) \\
+    X-CLIP &-&-&-& 0.85 & 0.88 & 0.90 \\
+    \bottomrule
+    VideoDescriptor &3rand&V& & 0.85 & 0.88 & 0.90 \\
+    \midrule
+    VideoDescriptor &5rand&V& & 0.85 & 0.88 & 0.90 \\
+    \midrule
+    VideoDescriptor &3strat&V& & 0.85 & 0.88 & 0.90 \\
+    \midrule
+    VideoDescriptor &5strat&V& & 0.85 & 0.88 & 0.90 \\
+    \midrule
+    VideoDescriptor &5strat&C& & 0.85 & 0.88 & 0.90 \\
     \bottomrule
     % TODO add my own results.
   \end{tabular}
   \label{tab:model_comparison}
-  \caption{Performance Comparison of Models on Different Benchmarks. B}
+  \caption{Performance Comparison of Models on Different Benchmarks}
 \end{table}
 
 Note that due to computational constraints, only the 1000 videos in the MSR-VTT retrieval split were indexed, while in related works the entire dataset of 10,000 videos are indexed.

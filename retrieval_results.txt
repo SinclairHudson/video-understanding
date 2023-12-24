@@ -1,0 +1,55 @@
+msr-vtt_descriptions_L1180.csv
+DPR Recall@1,5,10:
+[0.214, 0.415, 0.415]
+BM25 Recall@1,5,10:
+[0.125, 0.266, 0.341]
+msr-vtt_descriptions_5strat_02temp.csv
+DPR Recall@1,5,10:
+[0.269, 0.456, 0.456]
+BM25 Recall@1,5,10:
+[0.176, 0.364, 0.446]
+msr-vtt_descriptions_3strat_0temp_concise.csv
+DPR Recall@1,5,10:
+[0.276, 0.468, 0.468]
+BM25 Recall@1,5,10:
+[0.138, 0.284, 0.366]
+msr-vtt_descriptions_3strat_0temp.csv
+DPR Recall@1,5,10:
+[0.26, 0.485, 0.485]
+BM25 Recall@1,5,10:
+[0.134, 0.288, 0.356]
+msr-vtt_descriptions_3strat_02temp.csv
+DPR Recall@1,5,10:
+[0.265, 0.437, 0.437]
+BM25 Recall@1,5,10:
+[0.157, 0.323, 0.408]
+msr-vtt_descriptions_5strat_0temp.csv
+DPR Recall@1,5,10:
+[0.29, 0.483, 0.483]
+BM25 Recall@1,5,10:
+[0.167, 0.326, 0.411]
+msr-vtt_descriptions_5strat_0temp_concise.csv
+DPR Recall@1,5,10:
+[0.293, 0.492, 0.492]
+BM25 Recall@1,5,10:
+[0.15, 0.331, 0.417]
+msr-vtt_descriptions_3rand_0temp.csv
+DPR Recall@1,5,10:
+[0.281, 0.457, 0.457]
+BM25 Recall@1,5,10:
+[0.142, 0.28, 0.34]
+msr-vtt_descriptions_5strat_triples.csv
+DPR Recall@1,5,10:
+[0.286, 0.49, 0.49]
+BM25 Recall@1,5,10:
+[0.151, 0.328, 0.395]
+msr-vtt_descriptions_5rand_0temp.csv
+DPR Recall@1,5,10:
+[0.272, 0.44, 0.44]
+BM25 Recall@1,5,10:
+[0.149, 0.294, 0.368]
+msr-vtt_descriptions_3strat_triples.csv
+DPR Recall@1,5,10:
+[0.269, 0.467, 0.467]
+BM25 Recall@1,5,10:
+[0.122, 0.277, 0.347]
