@@ -1,0 +1,29 @@
+\section{Discussion}
+
+\subsection{Video Retrieval}
+
+At a high level, it would seem that the Bi-Encoder performs better than BM25 for this retrieval task, especially for Recall@1.
+
+For frame selection, it would appear that \verb|5strat| is slightly more performant when compared to equivalent \verb|3strat| experiments, indicating that the extra frames evenly spaced throughout the video are helpful for understanding the video.
+The random sampling doesn't perform significantly worse than stratified sampling, contrary to expectation.
+This could be due to the fact that the videos in MSR-VTT are relatively short, and so all sampling methods may return very siilar sets of frames for each video.
+These videos often only contain one clip, so in this case random sampling isn't prone to catastrophically missing a scene in the video.
+
+For prompt choice, it would seem that this task is relatively insensitive to prompts.
+The differences between the concise (C) experiments and equivalent verbose (V) ones are negligible.
+However, we do see a significant improvement for the stochastic temperature "prompt" (T), when using the BM25 retriever.
+Intuitively this makes sense; a higher temperature will produce a more diverse set of words in the description, which will help tf-idf-based retrievers like BM25 find the right document.
+
+Interestingly, the experiments that use "triple" frames don't perform notably better than the experiments that use single frames in video retrieval.
+This seems to suggest that either the additional frames are redundant, or that LLaVA is not good at incorporating information from multiple images in a single generation step.
+This is similar to the findings in CLIP4clip, where the authors find that processing frames in batches as 3D tensors doesn't improve performance over frame-by-frame processing \cite{clip4clip}.
+
+The authors of VideoChat note that their similar VideoChat-Text pipeline struggled to understand "intricate temporal reasoning and causal inference".
+
+One interesting feature about the retrieval results of the VideoDescriptor + DPR model is that recall@5 and recall@10 are always the same.
+It would seem that if the correct video isn't in the top 5 results, it's not in the top 10 either.
+The properties of the OpenAI embedding space aren't well understood, so it's difficult to say why this is the case.
+
+\subsection{Video Summarization}
+
+TODO
