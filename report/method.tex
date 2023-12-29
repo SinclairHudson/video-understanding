@@ -56,7 +56,7 @@ To make the pipeline efficient, it's critical to select the subset of the most s
 While some LLMs like LLaVA can take multiple images as input, they are rarely tested and likely not trained on multi-image inputs.
 The input to frame selection is a clip (small length of video) and the output is a list of frames selected for further processing.
 
-Earlier works simply sample randomly \cite{TODO} or sample uniformly, at a course framerate such as 1 frame per second \cite{clip4clip}.
+Earlier works simply sample randomly \cite{clipbert} or sample uniformly, at a course framerate such as 1 frame per second \cite{clip4clip}.
 
 This work explores 3 different frame selection strategies:
 greedy L1 selection, stratified sampling, random sampling, and stratified triplet sampling.
@@ -79,7 +79,7 @@ As a result, there is only one textual description per triplet in this sampling 
 \subsection{Greedy L1 Selection}
 Greedy L1 selection initially selects the first frame of a clip. Then, it selects an additional clip if the L1 distance between the new frame and the previously selected frame is greater than some threshold (for example).
 The L1 distance is normalized by the number of pixels in the image, so that the threshold is independent of the video resolution.
-In the MSR-VTT dataset, most videos are quite short (TODO graph for this), and often only contain a single shot.
+In the MSR-VTT dataset, most videos are quite short (see Figure \ref{fig:length_histogram}), and often only contain a single shot.
 As such, when using Greedy L1 selection, a substantial number of videos only have the first frame selected (with L1 threshold 180).
 The idea for selction based on L1 is to skip frames that are visually similar to the previously selected frame.
 The selection strategy is greedy; the first frame is always selected, and then frames are considered in order, only selected if the frame differs from the previously selected frame by a certain L1 distance.
@@ -93,8 +93,8 @@ where $c$ is a pre-defined threshold, $I_{p}$ is the previously selected frame, 
 
 \begin{figure}
       \centering
-      \includegraphics[width=0.8\textwidth]{figures/L1_frame_selection.png}
-      \caption{Number of frames selected per video in the MSR-VTT dataset retrieval split, for different thresholds.}
+      \includegraphics[width=0.8\textwidth]{figures/num_frames_histogram.png}
+      \caption{Number of frames selected per video in the MSR-VTT dataset retrieval split when using greedy L1 selection, for different thresholds.}
       \label{fig:optical_flow}
 \end{figure}
 
@@ -128,3 +128,11 @@ This approach is heavily inspired by DPR \cite{dpr}, but uses the same encoder f
 In that way, it's similar to the Bi-Encoder strategy used in the BLINK zero-shot entity linker \cite{blink}.
 Specifically, the OpenAI model used to generate embedding vectors is \verb|text-embedding-ada-002|, which outputs 1536-dimensional vectors.
 The KNN is performed using the FAISS library \cite{faiss}, and all clip descriptions are embedded and stored in an index beforehand, making querying for nearest neighbours very fast.
+
+\begin{figure}
+      \centering
+      \includegraphics[width=0.8\textwidth]{figures/openai_DPR.png}
+      \caption{Bi-Encoder retrieval strategy, using OpenAI embedding API.}
+      \label{fig:bienc}
+\end{figure}
+

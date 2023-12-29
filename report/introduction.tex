@@ -5,7 +5,7 @@ In addition, multimodal vision-language models have been developed to create a s
 These multimodal models have enables zero-shot adaptation in many tasks, and have been merged with transformer-based language models to create large language models (LLMs) that can process visual information in the form of images \cite{flamingo} \cite{llava} \cite{gpt4vision} \cite{gemini}.
 These LLMs, with the ability to understand both images and text, can now perform a lot of traditional benchmark tasks zero-shot, after being trained on vast amounts of semi-structured internet data \cite{gpt4vision} \cite{clip} \cite{gemini} \cite{flamingo}.
 Despite their success in understanding images, LLMs have not yet shown the same success in understanding video.
-Popular video understanding benchmarks such as MSR-VTT \cite{}, MSVD \cite{}, and ActivityNet \cite{} are still largely dominated by architectures custom-built for video understanding.
+Popular video understanding benchmarks such as MSR-VTT \cite{msr-vtt}, MSVD \cite{msvd}, and ActivityNet \cite{activitynet} are still largely dominated by architectures custom-built for video understanding.
 While these architectures often use the same techniques of self-supervised pre-training and further transfer learning, they do not use the same LLMs that have been so successful in image understanding.
 This work proposes a general pipeline for accomplishing video understanding tasks using multimodal LLMs, by converting visual information into text and then completing the analog task in the text domain.
 

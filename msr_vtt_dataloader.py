@@ -1,6 +1,7 @@
 import cv2
 import os
 import pandas as pd
+import numpy as np
 from typing import List
 from tqdm import tqdm
 from PIL import Image
@@ -126,7 +127,23 @@ def get_number_of_frames_per_clip_L1(threshs=[50, 100, 150, 200, 250]):
             subset_df.at[i, "frames_"+str(thresh)] = len(frames)
     subset_df.to_csv("msrvtt_jsfusion_with_frames_per_clip.csv", index=False)
 
-# def show_frames_per_clip_L1():
+def show_frames_per_clip_L1():
+    df = pd.read_csv("msrvtt_jsfusion_with_frames_per_clip.csv")
+    threshs = [50, 100, 150, 200, 250]
+    for thresh in threshs:
+        x ,y = np.unique(df["frames_"+str(thresh)],return_counts=True)
+        plt.plot(x, y, label="c="+str(thresh))
+
+    plt.tight_layout()
+    plt.xticks(fontsize=26)
+    plt.yticks(fontsize=26)
+    plt.legend(fontsize=26)
+    # plt.yscale('log', base=)
+    plt.xlabel("Number of Frames", fontsize=26)
+    plt.ylabel("Count", fontsize=26)
+    plt.xlim(0, 250)
+    plt.ylim(0, 200)
+    plt.show()
 
 
 
@@ -134,5 +151,6 @@ def get_number_of_frames_per_clip_L1(threshs=[50, 100, 150, 200, 250]):
 if __name__ == '__main__':
     # get_length_histogram()
     # get_number_of_frames_per_clip_L1()
-    get_number_of_frames_per_clip_L1([50, 100, 150, 200, 250])
+    # get_number_of_frames_per_clip_L1([50, 100, 150, 200, 250])
+    show_frames_per_clip_L1()
 

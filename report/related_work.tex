@@ -5,7 +5,7 @@
 Video understanding is a difficult machine learning task, for many reasons.
 The data is very high-dimensional, and yet semantically sparse; most frames and pixels are redundant when analysing the video for content.
 Additionally, video data is extremely time-consuming to annotate.
-As such, very few video datasets exist, and are often much smaller than analogous image datasets \cite{imagenet} \cite{COCO}.
+As such, very few video datasets exist, and are often much smaller than analogous image datasets \cite{imagenet} \cite{coco}.
 Nevertheless, videos are ubiquitous in digital life, on popular social media websites like YouTube and TikTok, and so the research domain of video understanding is active and diverse.
 Below, a few of the most relevant works are briefly introduced.
 
@@ -27,7 +27,7 @@ The authors train InternVideo with a combination of multimodal constrastive lear
 The InternVideo video encoder is pretrained on a large dataset of internet videos and movies, allowing it to learn very semantically rich representations of videos.
 This dataset is compiled by the authors using both pre-existing video datasets as well as videos scraped from the internet. In total, the datasets contains 12 million videos from 5 different domains \cite{internvideo}.
 With additional fine-tuning on specific tasks, InternVideo achieves state-of-the-art performance on multiple tasks including Action Understanding, Video-Language Alignment, and Video Open Understanding \cite{internvideo}.
-Pipelines that use Internvideo are often combined with TODO in order to bridge the modality gap between video and text. Note that InternVideo is \textit{not} a large language model.
+Note that InternVideo is \textit{not} a large language model, though TODO.
 
 \subsection{Large Language Models for Vision}
 
@@ -39,7 +39,7 @@ Flamingo is trained on many datasets, including image-text and video-text datase
 The authors note that performance improves up to around 32 frames, indicating that Flamingo is able to gather useful features from many images simulataneously.
 
 LLaVA \cite{llava} is a large language model trained on a combination of text and video data.
-It is built upon the Vicuana language model \cite{vicuana}, and incorporates the visual encoder of CLIP \cite{clip} to encode images into embeddings that the language model can take as input.
+It is built upon the Vicuna language model \cite{vicuna}, and incorporates the visual encoder of CLIP \cite{clip} to encode images into embeddings that the language model can take as input.
 It is fine-tuned end-to-end on instructional image-text data, and has proven to be exceptionally strong at visual question-answering tasks.
 
 \subsection{Large Language Models for Video}
@@ -61,9 +61,9 @@ Like VideoChat, it is largely designed for video question-answering tasks and ch
 \subsection{Video-Text datasets}
 MSR-VTT (Microsoft Research Video to Text) is a flagship video understanding dataset \cite{msr-vtt}.
 This dataset can be used for multiple tasks, including Video Question Answering, Video Retrieval, and Video Captioning.
-The dataset contains 10,000 videos, largely sourced from the internet (TODO verify).
+The dataset contains 10 000 videos, sourced from the internet based on popular search queries.
 For the video retrieval task, 1000 queries are used for testing, each specifying exactly one video as the correct answer \cite{jsfusion}.
-The videos in the video retrieval split are 12 seconds long on average, see \ref{fig:length_histogram} for a histogram of video lengths.
+The videos in the video retrieval split are 12 seconds long on average, see Figure \ref{fig:length_histogram} for a histogram of video lengths.
 
 \begin{figure}
       \centering
