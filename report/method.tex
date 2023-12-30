@@ -30,21 +30,33 @@ Prior works often treat the video as-is and do not pre-process it much.
 \section{Clip Partitioning}
 
 Videos can contain a lot of different clips, which may or may not be related.
+As such, it's desirable to process and describe each clip individually; clips are an atomic unit in video.
 The input for clip partitioning is the whole video, and the output is a list of breaks (frame numbers) between clips.
 The difficult aspect of clip partitioning is to efficiently find the boundaries between clips.
 A two-hour video at 24 frames per second contains 172,800 frames, and so processing each one is computationally expensive.
-\subsection{Uniform partitioning}
+
 The simplest approach to clip partitioning is to simply partition the video into equal-sized clips, without regard for the content of the video.
-This approach is simple, but the resulting clips are not necessarily cohesive, since clips could contain multiple scenes and shots.
+This approach is simple and fast to compute, but the resulting clips are not necessarily cohesive, since "clips" could contain multiple scenes and shots.
+
 \subsection{Coarse-to-fine clip partitioning}
-Starts by computing the L1 distance between frames 1 second apart.
-If the the distance is above a certain threshold, then a clip break is likely in this second.
-Thus, the 1-second segment is evaluated frame by frame, and if the distance between two frames is above a threshold, then a clip break is identified.
+A more strategic approach identifies breaks as sequential frames with a large difference between them.
+However, even computing a simple difference such as an L1 or L2 norm between each pair of frames is computationally expensive, since a norm must be taken per frame in the video.
+
+As such, the VideoDescriptor pipeline uses a coarse-to-fine approach to clip partitioning.
+The algorithm starts by computing the L1 distance between frames \textit{1 second apart}, over the entire video.
+If the the L1 distance between these frames is above a certain threshold, then its likely that there's a clip break between them.
+Thus, the 1-second segment is evaluated frame by frame, and if the distance between two frames is above the threshold, then a clip break is identified.
+Empirically, this approach saves 60\% of the L1 computations compared to the naive frame-by-frame approach, and could save more if fewer coarse breaks are identified.
+
+See Figure \ref{fig:breaks} for resulting clip breaks from the coarse-to-fine approach.
+Qualitative results show that this approach is very effective at identifying clip breaks, with few false positives and false negatives.
+Qualitatively, this approach struggles when large objects move quickly in the video, resulting in large differences between frames.
+Sudden changes in the video, like the flash of a camera, are also often falsely identified as a clip break due to the sudden difference in brightness.
 
 \begin{figure}
       \centering
-      \includegraphics[width=0.8\textwidth]{figures/TODO.png}
-      \caption{Frames one before and one after a clip break, determined by the coarse-to-fine clip partitioning strategy. The movie being partitioned is TODO}
+      \includegraphics[width=\textwidth]{figures/breaks.png}
+      \caption{Frames immediately before and after a clip break, determined by the coarse-to-fine clip partitioning strategy.}
       \label{fig:breaks}
 \end{figure}
 
@@ -117,11 +129,11 @@ In all cases, we limit the length of the caption to 512 words, to bound the amou
 
 \section{Retrieval}
 
-The last aspect of 
-
-Because LLMs have described the content of the videos, the retrieval task is reduced to that of text retrieval, which is well-studied.
+The last aspect of of the pipeline is, of course, retrieval.
+Because LLMs have described the content of the videos at this point in the pipeline, the retrieval task is reduced to that of text retrieval, which is well-studied.
 In this work, we explore two retrieval strategies: BM25 and Bi-Encoder, using OpenAI embeddings.
-BM25 is a highly performant sparse retriever, relying on term frequencies TODO.
+BM25 is a highly performant sparse retriever, relying on term frequencies and other statistics to rank documents.
+It is a very fast baseline, retrieving from a thousand documents in milliseconds.
 
 \subsection{Bi-Encoder Retrieval}
 This approach is heavily inspired by DPR \cite{dpr}, but uses the same encoder for both documents and queries, and uses L2 distance as a similarity metric instead of the dot product.

@@ -28,6 +28,7 @@
       This work explores a general pipeline that leverages large language models (LLMs) to convert video into textual descriptions, and then further answer queries about the video using the textual descriptions.
       This pipeline is called the VideoDescriptor pipeline, and is evaluated on video summariztion as well as text to video retrieval.
       While not as accurate as other methods, the VideoDescriptor pipeline is able to achieve reasonable results on both tasks, and is completely zero-shot.
+      Code for all experiments is available at \url{https://github.com/SinclairHudson/video-understanding}.
 \end{abstract}
 
 \input{introduction}
@@ -62,17 +63,21 @@
   \caption{Performance comparison of the best VideoDescriptor configurations against other models on MSR-VTT T2V retrieval.}
 \end{table}
 
+The VideoDescriptor pipeline is compared against other models in Table \ref{tab:model_comparison}.
+Different configurations of the VideoDescriptor pipeline are compared in Table \ref{tab:video_descriptor_comparison}. %TODO this doesn't work?
 Note that due to computational constraints, only the 1000 videos in the MSR-VTT retrieval split were indexed, while in related works the entire dataset of 10,000 videos are indexed.
-As such, direct comparisons between the recall values between this work and related works should not be made.
+As such, direct comparisons between the recall values between this work and related works in should not be made.
+Table \ref{tab:model_comparison} is included to provide context for the results of the VideoDescriptor pipeline.
 The retrieval task for the proposed pipeline is much easier, since it is retrieving from a dataset one tenth the size.
-Also note that this pipeline functions zero-shot, while all other models have been finetuned for text-to-video retrieval on MSR-VTT.
+Also note that the VideoDescriptor pipeline functions zero-shot, while all other models have been finetuned for text-to-video retrieval on MSR-VTT.
 
 
 \begin{table}[htbp]
   \centering
+  \label{tab:video_descriptor_comparison}
   \begin{tabular}{lccccccc}
     \toprule
-    \textbf{Approach} &FS & Prompt & Triple & \multicolumn{3}{c}{\textbf{MSR-VTT} T2V} \\
+    \textbf{Approach} &Frame Sampling & Prompt & Triplet? & \multicolumn{3}{c}{\textbf{MSR-VTT} T2V} \\
     \cmidrule(lr){5-7}
                       &&&& \textbf{R@1} & \textbf{R@5} & \textbf{R@10} \\
     \midrule
@@ -122,37 +127,21 @@ Also note that this pipeline functions zero-shot, while all other models have be
     VideoDescriptor + BM25 &5rand&V& & 0.149 & 0.294 & 0.368 \\
     \midrule
   \end{tabular}
-  \label{tab:video_descriptor_comparison}
-  \caption{Performance of many VideoDescriptor configurations on MSR-VTT T2V retrieval}
+  \caption{Performance of many VideoDescriptor configurations on MSR-VTT T2V retrieval.}
 \end{table}
 
 \subsection{Qualitative Results on Video Summarization}
 For video summarization, the task is to select a subset of clips from a video relevant to the query.
 Sports games are desireable to summarize because they are long, with a few well-defined interesting events (goals, fouls, etc.).
-To test this method, we will full sports games from YouTube.
-In this full soccer game, 7 goals are scored, 4 by France and 3 by Argentina.
+To test this method, a hockey game and a soccer game were partitioned into clips, with each clip being described using \verb|3strat| sampling.
+Then, given a query, the top 30 clips were edited together in order of relevance and rendered into a single video.
+The results can be found in this playlist: \url{TODO}.
+In general, The VideoDescriptor pipeline struggles to identify semantically meaningful clips, but is able to identify relevant objects easily.
+For example, it seems easier for the pipeline to identify celebrations of goals rather than the goals themselves, since the celebrations are more visually distinct (players celebrating and huddled together).
 
-\begin{table}[htbp]
-  \centering
-  \begin{tabular}{lccccc}
-    \toprule
-    \textbf{Query} & \multicolumn{3}{c}{\textbf{Soccer}} & \multicolumn{3}{c}{\textbf{Hockey}}\\
-    \cmidrule(lr){2-4}
-    & \textbf{Recall} & Length \\
-    \midrule
-    \multirow{2}{*}{Goals Scored by team France, in dark blue jerseys.} & 0.85 & 0.88 & 0.90 & HR, HL, \\
-    & (0.02) & (0.01) & (0.03) \\
-    \midrule
-    \multirow{2}{*}{Goals scored by team Argentina, in light blue and white jerseys.} & 0.78 & 0.82 & 0.85 \\
-    & (0.03) & (0.02) & (0.01) \\
-    \midrule
-    \multirow{2}{*}{Goals scored} & 0.92 & 0.89 & 0.91 \\
-    & (0.01) & (0.02) & (0.01) \\
-    \bottomrule
-  \end{tabular}
-  \label{tab:video_summarization}
-  \caption{Performance Comparison of Models on Different Benchmarks}
-\end{table}
+The videos ended up being partitioned into over 700 clips each.
+Additionally, the clip partitioning at times struggles with large fast-moving objects, creating large inter-frame differences and triggering a clip break.
+At the same time, slow transitions and fade transitions are often not detected because they gradually change from one clip to another.
 
 \input{discussion}
 

@@ -98,40 +98,13 @@ def visualize_clip_breaks_detected(video_file_path, break_file_path):
 
     pass
 
-def break_into_clips(source_file, breaks_file):
-    """
-    Break source video into multiple different videos, each corresponding to a clip.
-    Clips are split based on frame numbers in the breaks file.
-    """
-    cap = cv2.VideoCapture(source_file)
-    frame_count = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
-    fps = cap.get(cv2.CAP_PROP_FPS)
-    width = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH))
-    height = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
-    breaks = np.load(breaks_file)
-
-    prev_break = 0
-    clip_number = 0
-    [os.remove(file) for file in glob.glob("tmp/*.mp4")]
-    for break_frame in tqdm(breaks):
-        fourcc = cv2.VideoWriter_fourcc(*'mp4v')
-        out = cv2.VideoWriter(f"tmp/clip_{clip_number}.mp4", fourcc, fps, (width, height))
-        clip_number += 1
-        for i in range(prev_break, break_frame):
-            cap.set(cv2.CAP_PROP_POS_FRAMES, i)
-            ret, frame = cap.read()
-            out.write(frame)
-        out.release()
-        prev_break = break_frame
-
-def break_into_clips(source_file, breaks_file):
+def break_into_clips(name, source_file, breaks_file):
     """
     Break source video into multiple different videos, each corresponding to a clip.
     Clips are split based on frame numbers in the breaks file.
     """
     breaks = np.load(breaks_file)
     full_video = VideoFileClip(source_file)
-    fps = 25.0
     cap = cv2.VideoCapture(source_file)
     fps = cap.get(cv2.CAP_PROP_FPS)
     subclips = []
@@ -140,14 +113,15 @@ def break_into_clips(source_file, breaks_file):
     for i in tqdm(range(num_breaks-1)):
         subclips.append(full_video.subclip(breaks[i]/fps, breaks[i+1]/fps))
 
+    os.mkdir(f"{name}_tmp")
     for i, subclip in enumerate(tqdm(subclips)):
-        subclip.write_videofile(f"tmp/clip_{i}.mp4")
+        subclip.write_videofile(f"{name}_tmp/clip_{i}.mp4")
 
-def describe_clips(clips_path):
+def describe_clips(name: str, clips_path):
     from llava_handler import call_llava
     prompt = "Please describe what is going on in this image."
     df = pd.DataFrame(columns=["clip_file", "description"])
-    output_file = "clip_descriptions.csv"
+    output_file = f"descriptions/{name}_clip_descriptions.csv"
     for i, clip in enumerate(tqdm(os.listdir(clips_path))):
         frames = get_video_frames(f"{clips_path}/{clip}", proportions=[0, 0.5, 1.0])
         descriptions = []
@@ -162,8 +136,8 @@ def describe_clips(clips_path):
 
 
 if __name__ == '__main__':
-    # coarse_to_fine_clip_partitioning("hockey", "videos/NHL Oct.02_2023 PS Montreal Canadiens - Toronto Maple Leafs.mp4")
+    coarse_to_fine_clip_partitioning("soccer", "videos/France v Argentina 2018 FIFA World Cup Full Match.mp4")
     # visualize_clip_breaks_detected("videos/NHL Oct.02_2023 PS Montreal Canadiens - Toronto Maple Leafs.mp4", "breaks.npy")
-    break_into_clips("videos/NHL Oct.02_2023 PS Montreal Canadiens - Toronto Maple Leafs.mp4", "hockey_breaks.npy")
-    # describe_clips("tmp")
+    break_into_clips("soccer", "videos/France v Argentina 2018 FIFA World Cup Full Match.mp4", "soccer_breaks.npy")
+    describe_clips("soccer", "soccer_tmp")
 
