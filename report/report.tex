@@ -55,12 +55,12 @@
     \midrule
     InternVideo \cite{internvideo} &-&-&-& 0.552 & - & - \\
     \bottomrule
-    VideoDescriptor + BiEnc &5strat&C& & 0.293 & 0.492 & 0.492 \\
+    VideoDescriptor + BiEnc &5strat&C& & 0.293 & 0.531 & 0.642 \\
     \midrule
     VideoDescriptor + BM25 &5strat&T& & 0.176 & 0.364 & 0.446 \\
   \end{tabular}
-  \label{tab:model_comparison}
   \caption{Performance comparison of the best VideoDescriptor configurations against other models on MSR-VTT T2V retrieval.}
+  \label{tab:model_comparison}
 \end{table}
 
 The VideoDescriptor pipeline is compared against other models in Table \ref{tab:model_comparison}.
@@ -74,34 +74,33 @@ Also note that the VideoDescriptor pipeline functions zero-shot, while all other
 
 \begin{table}[htbp]
   \centering
-  \label{tab:video_descriptor_comparison}
   \begin{tabular}{lccccccc}
     \toprule
     \textbf{Approach} &Frame Sampling & Prompt & Triplet? & \multicolumn{3}{c}{\textbf{MSR-VTT} T2V} \\
     \cmidrule(lr){5-7}
                       &&&& \textbf{R@1} & \textbf{R@5} & \textbf{R@10} \\
     \midrule
-    VideoDescriptor + BiEnc &L1 greedy&V& & 0.214 & 0.415 & 0.415 \\
+    VideoDescriptor + BiEnc &L1 greedy&V& & 0.215 & 0.439 & 0.544 \\
     \midrule
-    VideoDescriptor + BiEnc &3strat&V& & 0.26 & 0.485 & 0.485 \\
+    VideoDescriptor + BiEnc &3strat&V& & 0.26 & 0.505 & 0.604 \\
     \midrule
-    VideoDescriptor + BiEnc &3strat&C& & 0.276 & 0.468 & 0.468 \\
+    VideoDescriptor + BiEnc &3strat&C& & 0.276 & 0.494 & 0.598 \\
     \midrule
-    VideoDescriptor + BiEnc &3strat&T& & 0.265 & 0.437 & 0.437 \\
+    VideoDescriptor + BiEnc &3strat&T& & 0.265 & 0.480 & 0.590 \\
     \midrule
-    VideoDescriptor + BiEnc &3strat&V& \checkmark & 0.269 & 0.467 & 0.467 \\
+    VideoDescriptor + BiEnc &3strat&V& \checkmark & 0.269 & 0.505 & 0.604 \\
     \midrule
-    VideoDescriptor + BiEnc &3rand&V& & 0.281 & 0.457 & 0.457 \\
+    VideoDescriptor + BiEnc &3rand&V& & 0.282 & 0.490 & 0.596 \\
     \midrule
-    VideoDescriptor + BiEnc &5strat&V& & 0.290 & 0.483 & 0.483 \\
+    VideoDescriptor + BiEnc &5strat&V& & 0.290 & 0.516 & 0.625 \\
     \midrule
-    VideoDescriptor + BiEnc &5strat&C& & \textbf{0.293} & \textbf{0.492} & \textbf{0.492} \\
+    VideoDescriptor + BiEnc &5strat&C& & \textbf{0.293} & \textbf{0.531} & \textbf{0.642} \\
     \midrule
-    VideoDescriptor + BiEnc &5strat&T& & 0.269 & 0.456 & 0.456 \\
+    VideoDescriptor + BiEnc &5strat&T& & 0.269 & 0.481 & 0.593 \\
     \midrule
-    VideoDescriptor + BiEnc &5strat&V& \checkmark & 0.286 & 0.490 & 0.490 \\
+    VideoDescriptor + BiEnc &5strat&V& \checkmark & 0.286 & 0.530 & 0.635 \\
     \midrule
-    VideoDescriptor + BiEnc &5rand&V& & 0.272 & 0.440 & 0.440 \\
+    VideoDescriptor + BiEnc &5rand&V& & 0.272 & 0.476 & 0.604 \\
     \bottomrule
 
     VideoDescriptor + BM25 &L1 greedy&V& & 0.125 & 0.266 & 0.341 \\
@@ -128,20 +127,29 @@ Also note that the VideoDescriptor pipeline functions zero-shot, while all other
     \midrule
   \end{tabular}
   \caption{Performance of many VideoDescriptor configurations on MSR-VTT T2V retrieval.}
+  \label{tab:video_descriptor_comparison}
 \end{table}
 
 \subsection{Qualitative Results on Video Summarization}
 For video summarization, the task is to select a subset of clips from a video relevant to the query.
 Sports games are desireable to summarize because they are long, with a few well-defined interesting events (goals, fouls, etc.).
 To test this method, a hockey game and a soccer game were partitioned into clips, with each clip being described using \verb|3strat| sampling.
-Then, given a query, the top 30 clips were edited together in order of relevance and rendered into a single video.
-The results can be found in this playlist: \url{TODO}.
-In general, The VideoDescriptor pipeline struggles to identify semantically meaningful clips, but is able to identify relevant objects easily.
-For example, it seems easier for the pipeline to identify celebrations of goals rather than the goals themselves, since the celebrations are more visually distinct (players celebrating and huddled together).
+Each clip is described by the LLM using the prompt "Please describe what is going on in this image".
+Then, given a query, the top 30 clips were retrieved using the Bi-Encoder and edited together in order of relevance and rendered into a single video.
+The results can be found in the GitHub repository for download: \url{https://github.com/SinclairHudson/video-understanding/tree/main/video_summaries}.
 
-The videos ended up being partitioned into over 700 clips each.
-Additionally, the clip partitioning at times struggles with large fast-moving objects, creating large inter-frame differences and triggering a clip break.
-At the same time, slow transitions and fade transitions are often not detected because they gradually change from one clip to another.
+Both the soccer game and hockey game were appproximately 2 hours long, and each video ended up being partitioned into over 700 clips.
+The clip partitioning at times struggles with large fast-moving, high contrast objects, creating large inter-frame differences and triggering a clip break.
+
+During retrieval, the VideoDescriptor pipeline struggles to identify semantically meaningful clips, but is able to identify relevant objects easily.
+A manual inspection of the descriptions shows that the model is able to describe objects in the video well, but doesn't get specific about the actions in the scene, which is a potential reason for this behaviour.
+For example, it seems easier for the pipeline to retrieve prompts like "goaltender", "referee", or "coach", and harder to retrieve prompts like "goal".
+Identifying clips with referees or goaltenders is also easy, since they are visually distinct from the rest of the players and easy to identify in an image.
+
+From a runtime perspective, clip partitioning, description, and indexing takes approximately 4 hours, using an NVIDIA GeForce RTX 3090 GPU for LLM inference.
+However, the retrieval step using the FAISS library is very fast, taking less than 170ms to retrieve the top 30 clips from the index.
+With more efficient clip partitioning and description, this pipeline could be used to understand videos in practical applications involving video search.
+
 
 \input{discussion}
 

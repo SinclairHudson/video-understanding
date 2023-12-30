@@ -1,5 +1,18 @@
 \section{Discussion}
 
+\subsection{Clip Partitioning}
+
+Qualitatively, this approach struggles when large objects move quickly in the video, resulting in large differences between frames.
+Additionally, sudden changes in the video, like the flash of a camera, are also often falsely identified as a clip break due to the sudden difference in brightness.
+Finally, slow transitions and fade transitions are often not detected because they gradually change from one clip to another.
+Transitions found in traditional sports broadcasts can cause such issues.
+Those are the 3 most common failure modes of the L1-based clip partitioning algorithm.
+In general, false positives will increase the number of clips, and fragment true clips into multiple clips.
+Some amount of false positives may be acceptable, depending on the application.
+The increased number of clips may slow down the retrieval part of the pipeline, but fragmenting clips may not be problematic.
+False negatives are potentially more damaging, creating a clip that is really two clips.
+This could potentially unrelated clips into a downstream video summary, for example.
+
 \subsection{Video Retrieval}
 
 At a high level, it would seem that the Bi-Encoder performs better than BM25 for this retrieval task, especially for Recall@1.
@@ -24,6 +37,3 @@ One interesting feature about the retrieval results of the VideoDescriptor + DPR
 It would seem that if the correct video isn't in the top 5 results, it's not in the top 10 either.
 The properties of the OpenAI embedding space aren't well understood, so it's difficult to say why this is the case.
 
-\subsection{Video Summarization}
-
-TODO

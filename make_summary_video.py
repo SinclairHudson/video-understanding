@@ -5,6 +5,7 @@ import pandas as pd
 from langchain.vectorstores import FAISS
 from langchain.embeddings import OpenAIEmbeddings
 from moviepy.editor import VideoFileClip, concatenate_videoclips
+import time
 
 
 def compose_summary_video(clip_dir, clip_descriptions, query: str, k=30):
@@ -17,7 +18,9 @@ def compose_summary_video(clip_dir, clip_descriptions, query: str, k=30):
 
     db = FAISS.from_documents(documents, OpenAIEmbeddings())
     retriever = db.as_retriever(search_kwargs={'k': k})
+    start = time.time()
     results = retriever.get_relevant_documents(query)
+    print(f"Retrieval took {time.time() - start} seconds")
     files = [result.metadata['file'] for result in results]
 
     clips = []
@@ -30,11 +33,11 @@ def compose_summary_video(clip_dir, clip_descriptions, query: str, k=30):
             print(e)
     # clips = [VideoFileClip(os.path.join(clip_dir, file)) for file in files]
     final_clip = concatenate_videoclips(clips)
-    final_clip.write_videofile(f"summary_prompt_{k}_{query}.mp4")
+    final_clip.write_videofile(f"summary_k={k}_prompt={query}.mp4")
 
 if __name__ == '__main__':
-    compose_summary_video("hockey_tmp", "descriptions/hockey_clip_descriptions.csv", "referee")
-    # compose_summary_video("soccer_tmp", "descriptions/soccer_clip_descriptions.csv", "goalkeeper")
+    compose_summary_video("hockey_tmp", "descriptions/hockey_clip_descriptions.csv", "penalty")
+    # compose_summary_video("soccer_tmp", "descriptions/soccer_clip_descriptions.csv", "penalty")
     # compose_summary_video("soccer_tmp", "descriptions/soccer_clip_descriptions.csv", "coach")
 
 
