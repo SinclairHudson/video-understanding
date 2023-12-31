@@ -25,8 +25,8 @@
 
 \begin{abstract}
       While LLMs are now frequently extended to process visual information in the form of images, they are not yet commonly used to process video.
-      This work explores a general pipeline that leverages large language models (LLMs) to convert video into textual descriptions, and then further answer queries about the video using the textual descriptions.
-      This pipeline is called the VideoDescriptor pipeline, and is evaluated on video summariztion as well as text to video retrieval.
+      This work explores a general pipeline that leverages large language models (LLMs) to convert video into textual descriptions, and then further retrieve clips relevant to a query using the textual descriptions.
+      The pipeline is called the VideoDescriptor pipeline, and is evaluated on text to video retrieval as well as video summarization.
       While not as accurate as other methods, the VideoDescriptor pipeline is able to achieve reasonable results on both tasks, and is completely zero-shot.
       Code for all experiments is available at \url{https://github.com/SinclairHudson/video-understanding}.
 \end{abstract}
@@ -37,139 +37,16 @@
 
 \input{method}
 
-\section{Results}
-
-\subsection{Video Retrieval}
-
-\begin{table}[htbp]
-  \centering
-  \begin{tabular}{lccccccc}
-    \toprule
-    \textbf{Approach} &FS & Prompt & Triple & \multicolumn{3}{c}{\textbf{MSR-VTT} T2V} \\
-    \cmidrule(lr){5-7}
-                      &&&& \textbf{R@1} & \textbf{R@5} & \textbf{R@10} \\
-    \midrule
-    CLIP4Clip \cite{clip4clip} &-&-&-& 0.445 & 0.714 &  0.816\\
-    \midrule
-    X-CLIP \cite{xclip} &-&-&-& 0.493 & 0.758 & 0.848 \\
-    \midrule
-    InternVideo \cite{internvideo} &-&-&-& 0.552 & - & - \\
-    \bottomrule
-    VideoDescriptor + BiEnc &5strat&C& & 0.293 & 0.531 & 0.642 \\
-    \midrule
-    VideoDescriptor + BM25 &5strat&T& & 0.176 & 0.364 & 0.446 \\
-  \end{tabular}
-  \caption{Performance comparison of the best VideoDescriptor configurations against other models on MSR-VTT T2V retrieval.}
-  \label{tab:model_comparison}
-\end{table}
-
-The VideoDescriptor pipeline is compared against other models in Table \ref{tab:model_comparison}.
-Different configurations of the VideoDescriptor pipeline are compared in Table \ref{tab:video_descriptor_comparison}. %TODO this doesn't work?
-Note that due to computational constraints, only the 1000 videos in the MSR-VTT retrieval split were indexed, while in related works the entire dataset of 10,000 videos are indexed.
-As such, direct comparisons between the recall values between this work and related works in should not be made.
-Table \ref{tab:model_comparison} is included to provide context for the results of the VideoDescriptor pipeline.
-The retrieval task for the proposed pipeline is much easier, since it is retrieving from a dataset one tenth the size.
-Also note that the VideoDescriptor pipeline functions zero-shot, while all other models have been finetuned for text-to-video retrieval on MSR-VTT.
-
-
-\begin{table}[htbp]
-  \centering
-  \begin{tabular}{lccccccc}
-    \toprule
-    \textbf{Approach} &Frame Sampling & Prompt & Triplet? & \multicolumn{3}{c}{\textbf{MSR-VTT} T2V} \\
-    \cmidrule(lr){5-7}
-                      &&&& \textbf{R@1} & \textbf{R@5} & \textbf{R@10} \\
-    \midrule
-    VideoDescriptor + BiEnc &L1 greedy&V& & 0.215 & 0.439 & 0.544 \\
-    \midrule
-    VideoDescriptor + BiEnc &3strat&V& & 0.26 & 0.505 & 0.604 \\
-    \midrule
-    VideoDescriptor + BiEnc &3strat&C& & 0.276 & 0.494 & 0.598 \\
-    \midrule
-    VideoDescriptor + BiEnc &3strat&T& & 0.265 & 0.480 & 0.590 \\
-    \midrule
-    VideoDescriptor + BiEnc &3strat&V& \checkmark & 0.269 & 0.505 & 0.604 \\
-    \midrule
-    VideoDescriptor + BiEnc &3rand&V& & 0.282 & 0.490 & 0.596 \\
-    \midrule
-    VideoDescriptor + BiEnc &5strat&V& & 0.290 & 0.516 & 0.625 \\
-    \midrule
-    VideoDescriptor + BiEnc &5strat&C& & \textbf{0.293} & \textbf{0.531} & \textbf{0.642} \\
-    \midrule
-    VideoDescriptor + BiEnc &5strat&T& & 0.269 & 0.481 & 0.593 \\
-    \midrule
-    VideoDescriptor + BiEnc &5strat&V& \checkmark & 0.286 & 0.530 & 0.635 \\
-    \midrule
-    VideoDescriptor + BiEnc &5rand&V& & 0.272 & 0.476 & 0.604 \\
-    \bottomrule
-
-    VideoDescriptor + BM25 &L1 greedy&V& & 0.125 & 0.266 & 0.341 \\
-    \midrule
-    VideoDescriptor + BM25 &3strat&V& & 0.134 & 0.288 & 0.356 \\
-    \midrule
-    VideoDescriptor + BM25 &3strat&C& & 0.138 & 0.284 & 0.366 \\
-    \midrule
-    VideoDescriptor + BM25 &3strat&T& & 0.157 & 0.323 & 0.408 \\
-    \midrule
-    VideoDescriptor + BM25 &3strat&V& \checkmark & 0.122 & 0.277 & 0.347 \\
-    \midrule
-    VideoDescriptor + BM25 &3rand&V& & 0.142 & 0.280 & 0.340 \\
-    \midrule
-    VideoDescriptor + BM25 &5strat&V& & 0.167 & 0.326 & 0.411 \\
-    \midrule
-    VideoDescriptor + BM25 &5strat&C& & 0.150 & 0.331 & 0.417 \\
-    \midrule
-    VideoDescriptor + BM25 &5strat&T& & \textbf{0.176} & \textbf{0.364} & \textbf{0.446} \\
-    \midrule
-    VideoDescriptor + BM25 &5strat&V& \checkmark & 0.151 & 0.328 & 0.395 \\
-    \midrule
-    VideoDescriptor + BM25 &5rand&V& & 0.149 & 0.294 & 0.368 \\
-    \midrule
-  \end{tabular}
-  \caption{Performance of many VideoDescriptor configurations on MSR-VTT T2V retrieval.}
-  \label{tab:video_descriptor_comparison}
-\end{table}
-
-\subsection{Qualitative Results on Video Summarization}
-For video summarization, the task is to select a subset of clips from a video relevant to the query.
-Sports games are desireable to summarize because they are long, with a few well-defined interesting events (goals, fouls, etc.).
-To test this method, a hockey game and a soccer game were partitioned into clips, with each clip being described using \verb|3strat| sampling.
-Each clip is described by the LLM using the prompt "Please describe what is going on in this image".
-Then, given a query, the top 30 clips were retrieved using the Bi-Encoder and edited together in order of relevance and rendered into a single video.
-The results can be found in the GitHub repository for download: \url{https://github.com/SinclairHudson/video-understanding/tree/main/video_summaries}.
-
-Both the soccer game and hockey game were appproximately 2 hours long, and each video ended up being partitioned into over 700 clips.
-The clip partitioning at times struggles with large fast-moving, high contrast objects, creating large inter-frame differences and triggering a clip break.
-
-During retrieval, the VideoDescriptor pipeline struggles to identify semantically meaningful clips, but is able to identify relevant objects easily.
-A manual inspection of the descriptions shows that the model is able to describe objects in the video well, but doesn't get specific about the actions in the scene, which is a potential reason for this behaviour.
-For example, it seems easier for the pipeline to retrieve prompts like "goaltender", "referee", or "coach", and harder to retrieve prompts like "goal".
-Identifying clips with referees or goaltenders is also easy, since they are visually distinct from the rest of the players and easy to identify in an image.
-
-From a runtime perspective, clip partitioning, description, and indexing takes approximately 4 hours, using an NVIDIA GeForce RTX 3090 GPU for LLM inference.
-However, the retrieval step using the FAISS library is very fast, taking less than 170ms to retrieve the top 30 clips from the index.
-With more efficient clip partitioning and description, this pipeline could be used to understand videos in practical applications involving video search.
-
+\input{results}
 
 \input{discussion}
 
-\section{Future work}
-
-Expanding methodologies to other datasets is critical to fully examine the generalization capability of these pipelines.
-Additionally, this pipeline is currently very slow, requiring many forward passes of a large language model for every frame, and multiple frames for every clip.
-The current pipeline is experimental in nature, and has not been optimized for runtime performance.
-With additional engineering effort, the performance of the video processing and text processing elements of the pipeline could both be greatly improved.
-Future work could investigate further minimizing the number of frames processed, and prompting techniques to generate very dense captions, with a lot of information content in just a few tokens.
-
-While this work focused on the visual features of video, audio is also often attached to video, and thus could be used to further improve the performance of the pipeline.
-Related work such as VideoLLaMA has shown that audio can provide a small boost to performance \cite{videollama}.
-Incoporating audio would be particularly important for understanding videos that have an emphasis on dialogue, such as movies.
-
-Future work could also further investigate the influence of prompts and different LLMs on the performance of the pipeline.
+\input{future_work}
 
 \section{Conclusion}
 
 While supervised methods still perform much better than the VideoDescriptor pipeline on text to video retrieval, the VideoDescriptor shows potential for zero-shot retrieval.
+Additionally, it can be used for video summarization, and generates compelling videos for queries relating to specific objects in the video.
 Hopefully, the performance of the VideoDescriptor pipeline improves as multimodal language models improve.
 
 \bibliographystyle{alpha}

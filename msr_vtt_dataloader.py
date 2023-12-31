@@ -110,10 +110,10 @@ def get_length_histogram():
     subset_df.to_csv("msrvtt_jsfusion_with_lengths.csv", index=False)
     plt.tight_layout()
     plt.hist(lengths, bins=32, range=(0, 32))
-    plt.xticks(fontsize=18)  # Set x-axis tick label font size
-    plt.yticks(fontsize=18)  # Set y-axis tick label font size
-    plt.xlabel("Video Length (seconds)", fontsize=18)
-    plt.ylabel("count", fontsize=18)
+    plt.xticks(fontsize=28)  # Set x-axis tick label font size
+    plt.yticks(fontsize=28)  # Set y-axis tick label font size
+    plt.xlabel("Video Length (seconds)", fontsize=32)
+    plt.ylabel("Count", fontsize=32)
     plt.show()
 
 def get_number_of_frames_per_clip_L1(threshs=[50, 100, 150, 200, 250]):
@@ -149,8 +149,8 @@ def show_frames_per_clip_L1():
 
 # Example usage:
 if __name__ == '__main__':
-    # get_length_histogram()
+    get_length_histogram()
     # get_number_of_frames_per_clip_L1()
     # get_number_of_frames_per_clip_L1([50, 100, 150, 200, 250])
-    show_frames_per_clip_L1()
+    # show_frames_per_clip_L1()
 

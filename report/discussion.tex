@@ -10,7 +10,7 @@ Those are the 3 most common failure modes of the L1-based clip partitioning algo
 In general, false positives will increase the number of clips, and fragment true clips into multiple clips.
 Some amount of false positives may be acceptable, depending on the application.
 The increased number of clips may slow down the retrieval part of the pipeline, but fragmenting clips may not be problematic.
-False negatives are potentially more damaging, creating a clip that is really two clips.
+False negatives are potentially more damaging, creating a segment that is really two clips.
 This could potentially unrelated clips into a downstream video summary, for example.
 
 \subsection{Video Retrieval}
