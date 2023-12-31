@@ -17,7 +17,7 @@
 \usepackage{tikz}
 \def\checkmark{\tikz\fill[scale=0.4](0,.35) -- (.25,0) -- (1,.7) -- (.25,.15) -- cycle;}
 
-\title{Video Query Processing with Text}
+\title{VideoDescriptor: Video Understanding with Textual Descriptions}
 \author{Sinclair Hudson}
 
 \begin{document}
@@ -45,9 +45,11 @@
 
 \section{Conclusion}
 
-While supervised methods still perform much better than the VideoDescriptor pipeline on text to video retrieval, the VideoDescriptor shows potential for zero-shot retrieval.
-Additionally, it can be used for video summarization, and generates compelling videos for queries relating to specific objects in the video.
-Hopefully, the performance of the VideoDescriptor pipeline improves as multimodal language models improve.
+In this paper, the VideoDescriptor pipeline is proposed, consisting of 4 steps to process video into textual descriptions, and then retrieve clips relevant to a query.
+While supervised methods still perform much better than the VideoDescriptor pipeline on text-to-video retrieval, the pipeline shows potential, especially for a zero-shot method.
+Additionally, it can be used for video summarization, and generates compelling video summaries for queries relating to specific objects in the video.
+The 4 main steps of the pipeline are all relatively simple, requiring no task-specific training, and can be improved upon or modified in future work.
+Finally, since the VideoDescriptor pipeline is predominantly reliant on LLMs, it will likely benefit from future improvement of multimodal language models.
 
 \bibliographystyle{alpha}
 \bibliography{biblio}

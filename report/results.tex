@@ -25,12 +25,13 @@
 \end{table}
 
 The VideoDescriptor pipeline is compared against other models in Table \ref{tab:model_comparison}.
-Different configurations of the VideoDescriptor pipeline are compared in Table \ref{tab:video_descriptor_comparison}. %TODO this doesn't work?
-Note that due to computational constraints, only the 1000 videos in the MSR-VTT retrieval split were indexed, while in related works the entire dataset of 10,000 videos are indexed.
-As such, direct comparisons between the recall values between this work and related works in should not be made.
-Table \ref{tab:model_comparison} is included to provide context for the results of the VideoDescriptor pipeline.
-The retrieval task for the proposed pipeline is much easier, since it is retrieving from a dataset one tenth the size.
-Also note that the VideoDescriptor pipeline functions zero-shot, while all other models have been finetuned for text-to-video retrieval on MSR-VTT.
+Different configurations of the VideoDescriptor pipeline are compared in Table \ref{tab:video_descriptor_comparison}.
+For all MSR-VTT experiments, the videos are considered to be a single clip and thus clip partitioning is not used in the VideoDescriptor pipeline.
+Also note that the VideoDescriptor pipeline functions zero-shot, while all other models have been finetuned for text-to-video retrieval using the MSR-VTT training splits.
+%Note that due to computational constraints, only the 1000 videos in the MSR-VTT retrieval split were indexed, while in related works the entire test split (a superset of the retrieval split) is indexed.
+%As such, direct comparisons between the recall values between this work and related works should not be made.
+%Table \ref{tab:model_comparison} is included to provide context for the results of the VideoDescriptor pipeline.
+%The retrieval task for the proposed pipeline is much easier, since it is retrieving from a dataset one tenth the size.
 
 
 \begin{table}[htbp]
@@ -43,7 +44,7 @@ Also note that the VideoDescriptor pipeline functions zero-shot, while all other
     \midrule
     VideoDescriptor + BiEnc &L1 greedy&V& & 0.215 & 0.439 & 0.544 \\
     \midrule
-    VideoDescriptor + BiEnc &3strat&V& & 0.26 & 0.505 & 0.604 \\
+    VideoDescriptor + BiEnc &3strat&V& & 0.260 & 0.505 & 0.604 \\
     \midrule
     VideoDescriptor + BiEnc &3strat&C& & 0.276 & 0.494 & 0.598 \\
     \midrule
@@ -92,22 +93,21 @@ Also note that the VideoDescriptor pipeline functions zero-shot, while all other
 \end{table}
 
 \subsection{Qualitative Results on Video Summarization}
-For video summarization, the task is to select a subset of clips from a video relevant to the query.
+For visual video summarization, the task is to select a subset of clips from a video relevant to the query, and edit them together into a shorter video.
 Sports games are desireable to summarize because they are long, with a few well-defined interesting events (goals, fouls, etc.).
 To test this method, a hockey game and a soccer game were partitioned into clips, with each clip being described using \verb|3strat| sampling.
-Each clip is described by the LLM using the prompt "Please describe what is going on in this image".
+Each clip is described by the LLM using the prompt ``Please describe what is going on in this image".
 Then, given a query, the top 30 clips were retrieved using the Bi-Encoder and edited together in order of relevance and rendered into a single video.
 The results can be found in the GitHub repository for download: \url{https://github.com/SinclairHudson/video-understanding/tree/main/video_summaries}.
 
 Both the soccer game and hockey game were appproximately 2 hours long, and each video ended up being partitioned into over 700 clips.
-The clip partitioning at times struggles with large fast-moving, high contrast objects, creating large inter-frame differences and triggering a clip break.
+The clip partitioning at times struggles with large fast-moving, high contrast objects, which create large inter-frame differences and trigger a clip break.
 
 During retrieval, the VideoDescriptor pipeline struggles to identify semantically meaningful clips, but is able to identify relevant objects easily.
-A manual inspection of the descriptions shows that the model is able to describe objects in the video well, but doesn't get specific about the actions in the scene, which is a potential reason for this behaviour.
-For example, it seems easier for the pipeline to retrieve prompts like "goaltender", "referee", or "coach", and harder to retrieve prompts like "goal" or "penalty".
-Identifying clips with referees or goaltenders is also easy, since they are visually distinct from the rest of the players and easy to identify in an image.
+A manual inspection of the descriptions shows that the model is able to describe the frames of the video well, but doesn't get specific about the actions in the scene.
+For example, it seems easier for the pipeline to retrieve prompts like ``goaltender", ``referee", or ``coach", and harder to retrieve prompts like ``goal" or ``penalty".
+Identifying clips with referees or goaltenders is easy, since they are visually distinct from the rest of the players and easy to identify in an image.
 
-From a runtime perspective, clip partitioning, description, and indexing takes approximately 4 hours, using an NVIDIA GeForce RTX 3090 GPU for LLM inference.
+From a runtime perspective, clip partitioning, description, and indexing of a 2-hour sports game takes approximately 4 hours, using an NVIDIA GeForce RTX 3090 GPU for LLM inference.
 However, the retrieval step using the FAISS library is very fast, taking less than 170ms to retrieve the top 30 clips from the index.
 With more efficient clip partitioning and description, this pipeline could be used to understand videos in practical applications involving video search.
-

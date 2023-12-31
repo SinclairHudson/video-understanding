@@ -13,7 +13,7 @@ At a high level, the pipeline is as follows:
       \item Using the textual descriptions, retrieve clips relevant to a question or query.
 \end{enumerate}
 
-For brevity, these steps will be referred to as ``Clip partitioning", ``Frame selection", ``Clip description", and ``Clip Retrieval" respectively.
+For brevity, these steps will be referred to as ``Clip partitioning", ``Frame selection", ``Clip description", and ``Clip retrieval" respectively.
 The two most applicable tasks for this pipeline are video retrieval and visual video summarization.
 In video retrieval, given a query, the goal is to retrieve the video in a video dataset that best matches the query.
 In visual video summarization, the goal is to edit a video down to a shorter length, containing only clips relevant to a given query.
@@ -62,7 +62,7 @@ Qualitative results show that this approach is very effective at identifying cli
 \begin{figure}
       \centering
       \includegraphics[width=\textwidth]{figures/breaks.png}
-      \caption{Frames immediately before and after a clip break, determined by the coarse-to-fine clip partitioning strategy.}
+      \caption{Pairs of sequential frames, separated by a clip break. Clip breaks are determined by the coarse-to-fine clip partitioning strategy.}
       \label{fig:breaks}
 \end{figure}
 
@@ -119,7 +119,7 @@ As a result, there is only one textual description per triplet when using this s
 \subsection{Clip Description}
 
 The input to clip description is a prompt and multiple frames, and the output is a text description.
-The LLM used in testing this pipeline is LLava \cite{llava}.
+The multimodal LLM used in testing this pipeline is LLaVA \cite{llava}.
 LLaVA is selected because it is free and open source, and can be run on a single consumer GPU, making it amenable to experimentation.
 While LLaVA can take multiple images as input, it is rarely tested and on multi-image inputs.
 So, apart from the stratified triplet selection experiments, most clip descriptions are the concatenation of the descriptions of individual frames.
@@ -134,14 +134,15 @@ In all cases, the caption for each frame (or triplet) is limited to 512 words, t
 \subsection{Clip Retrieval}
 
 The last aspect of of the pipeline is, of course, retrieval.
-The input to clip retrieval is a query, and the output is a list of clips sorted by relevance.
-Because LLMs have described the content of the videos at this point in the pipeline, the retrieval task is reduced to that of text retrieval, which is well-studied.
+The input to clip retrieval is a query and the clip descriptions, and the output is a list of clips sorted by relevance.
+Because LLMs have described the content of the videos at this point in the pipeline, the retrieval task is reduced to that of text retrieval.
+The query is given, and the documents are the descriptions of the clips produced in the previous step.
 In this work, we explore two retrieval strategies: BM25 and Bi-Encoder, using OpenAI embeddings.
 BM25 is a highly performant sparse retriever, relying on term frequencies and other statistics to rank documents \cite{bm25}. %TODO make sure this citation gets rendered
 It is a very fast baseline, retrieving from a thousand documents in milliseconds.
 
 \subsubsection{Bi-Encoder Retrieval}
-The Bi-Encoder approach is heavily inspired by DPR \cite{dpr}, but uses the same encoder for both documents and queries, and uses L2 distance as a similarity metric instead of the dot product.
+The Bi-Encoder approach is heavily inspired by DPR \cite{dpr}, but uses the same encoder for both documents and queries, and uses L2 distance as a similarity metric instead of dot product.
 At a high level, all the documents are encoded into a vector space using an LLM encoder, and the query is encoded into the same vector space using the same encoder.
 Then, the similarity between the query and each document is computed using L2 distance, and the top-k documents are returned in a retrieval.
 While different in application, it's very similar to the bi-encoder strategy used in the BLINK zero-shot entity linker \cite{blink}.

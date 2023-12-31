@@ -1,7 +1,5 @@
 \section{Future work}
 
-Since the VideoDescriptor pipeline has 4 stages and many hyperparameters, there are many avenues for future work.
-
 First and foremost, expanding to other datasets is critical to fully examine the generalization capability of the pipeline.
 The current pipeline is currently very slow, requiring many forward passes of a large language model for every frame, and multiple frames for every clip.
 It is experimental in nature, and has not been optimized for runtime performance.
@@ -10,6 +8,7 @@ Future work could investigate further minimizing the number of frames processed,
 
 While this work focused on the visual features of video, audio is also often attached to video, and thus could be used to further improve the performance of the pipeline.
 Related work such as VideoLLaMA has shown that audio can provide a small boost to performance \cite{videollama}.
-Incoporating audio would be particularly important for understanding videos that have an emphasis on dialogue, such as movies.
-
-Future work could also further investigate the influence of prompts and different LLMs on the performance of the pipeline.
+Incorporating audio would be particularly important for understanding videos that have an emphasis on dialogue, such as movies.
+If longer videos are to be processed, it would also be beneficial to explore more sophisticated clip partitioning algorithms, as mentioned in the discussion.
+While not as important for performance on benchmark datasets, properly partitioning a long video into clips is a critical step for understanding videos in the real world.
+Since the VideoDescriptor pipeline has 4 largely independent stages and many hyperparameters, there are many avenues for future work.
