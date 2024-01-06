@@ -1,6 +1,6 @@
 # VideoDescriptor: Video Understanding with LLMs
 
-[!block_diagram](report/figures/pipeline.png)
+![block_diagram](report/figures/pipeline.png)
 
 This repository contains a project I did that applied LLMs to video understanding.
 At the time of writing, LLMs like LLaMA-2 had good multimodal image understanding, but hadn't been extended to video very successfully.
@@ -14,7 +14,8 @@ This project proposes a general pipeline to try to accomplish video retrieval in
 Essentially, the system converts video into text, and then solves the analog text problem.
 I created some custom video pre-processing as well, to segment long videos into atomic clips.
 
-[!retreiver](report/figures/openai_DPR.png)
+I also created a quick retreiver using the openAI embedding api:
+![retreiver](report/figures/openai_DPR.png)
 
 ---
 This is a project for CSC2508 Advanced Data Systems, a course I took in Fall 2023 with prof Nick Koudas.
